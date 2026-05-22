@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { connectDB } from './config/db';
+import { connectDB } from './config/db.js';
+import userRoutes from './routes/user.routes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -36,6 +37,9 @@ app.get('/api', (req: Request, res: Response) => {
     version: '1.0.0',
   });
 });
+
+// Mount user routes
+app.use('/api/users', userRoutes);
 
 // Fallback for 404 (Not Found) routes
 app.use((req: Request, res: Response) => {
