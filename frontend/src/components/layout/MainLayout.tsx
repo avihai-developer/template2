@@ -47,8 +47,7 @@ const openedMixin = (theme: Theme): CSSObject => ({
   background: 'var(--surface)',
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
-  borderRight: theme.direction === 'rtl' ? 'none' : '1px solid var(--border)',
-  borderLeft: theme.direction === 'rtl' ? '1px solid var(--border)' : 'none',
+  borderRight: '1px solid var(--border)',
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
@@ -64,8 +63,7 @@ const closedMixin = (theme: Theme): CSSObject => ({
   background: 'var(--surface)',
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
-  borderRight: theme.direction === 'rtl' ? 'none' : '1px solid var(--border)',
-  borderLeft: theme.direction === 'rtl' ? '1px solid var(--border)' : 'none',
+  borderRight: '1px solid var(--border)',
 });
 
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -104,13 +102,7 @@ const AppBar = styled(MuiAppBar, {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.enteringScreen,
         }),
-        ...(theme.direction === 'rtl' ? {
-          marginRight: drawerWidth,
-          marginLeft: 0,
-        } : {
-          marginLeft: drawerWidth,
-          marginRight: 0,
-        }),
+        marginLeft: drawerWidth,
       },
     },
   ],
@@ -419,7 +411,7 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
           display: 'flex', 
           flexDirection: 'column', 
           minHeight: '100vh',
-          width: `calc(100% - ${drawerWidth}px)`,
+          minWidth: 0,
           zIndex: 1
         }}
       >
