@@ -17,22 +17,18 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Sun, 
   Moon, 
   Globe, 
   Sparkles, 
-  Inbox, 
-  Star, 
-  Send, 
-  FileText, 
-  Mail, 
-  Trash2, 
-  AlertTriangle,
   Menu,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Home,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 
 const drawerWidth = 240;
@@ -142,6 +138,8 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
   const { t, i18n } = useTranslation();
   const muiTheme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -151,17 +149,10 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
     setOpen(false);
   };
 
-  const section1Items = [
-    { key: 'inbox', label: t('menu.inbox'), icon: <Inbox size={20} /> },
-    { key: 'starred', label: t('menu.starred'), icon: <Star size={20} /> },
-    { key: 'sendEmail', label: t('menu.sendEmail'), icon: <Send size={20} /> },
-    { key: 'drafts', label: t('menu.drafts'), icon: <FileText size={20} /> },
-  ];
-
-  const section2Items = [
-    { key: 'allMail', label: t('menu.allMail'), icon: <Mail size={20} /> },
-    { key: 'trash', label: t('menu.trash'), icon: <Trash2 size={20} /> },
-    { key: 'spam', label: t('menu.spam'), icon: <AlertTriangle size={20} /> },
+  const menuItems = [
+    { key: 'home', label: t('menu.home'), path: '/', icon: <Home size={20} /> },
+    { key: 'login', label: t('menu.login'), path: '/login', icon: <LogIn size={20} /> },
+    { key: 'register', label: t('menu.register'), path: '/register', icon: <UserPlus size={20} /> },
   ];
 
   return (
@@ -267,139 +258,78 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
         </DrawerHeader>
         <Divider sx={{ borderColor: 'var(--border)' }} />
         <List>
-          {section1Items.map((item) => (
-            <ListItem key={item.key} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
-                sx={[
-                  {
-                    minHeight: 48,
-                    px: 2.5,
-                    borderRadius: 'var(--radius-sm)',
-                    mx: 1,
-                    my: 0.5,
-                    transition: 'all var(--transition-fast)',
-                    color: 'var(--text-secondary)',
-                    '&:hover': {
-                      background: 'var(--surface-hover)',
-                      color: 'var(--primary)',
-                      '& .MuiListItemIcon-root': {
-                        color: 'var(--primary)',
-                        transform: 'scale(1.08)',
-                      }
-                    }
-                  },
-                  open
-                    ? {
-                        justifyContent: 'initial',
-                      }
-                    : {
-                        justifyContent: 'center',
-                      },
-                ]}
-              >
-                <ListItemIcon
-                  className="MuiListItemIcon-root"
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <ListItem key={item.key} disablePadding sx={{ display: 'block' }}>
+                <ListItemButton
+                  onClick={() => navigate(item.path)}
                   sx={[
                     {
-                      minWidth: 0,
-                      justifyContent: 'center',
-                      color: 'var(--text-muted)',
+                      minHeight: 48,
+                      px: 2.5,
+                      borderRadius: 'var(--radius-sm)',
+                      mx: 1,
+                      my: 0.5,
                       transition: 'all var(--transition-fast)',
+                      color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+                      background: isActive ? 'var(--primary-glow)' : 'transparent',
+                      borderLeft: isActive && muiTheme.direction !== 'rtl' ? '3px solid var(--primary)' : 'none',
+                      borderRight: isActive && muiTheme.direction === 'rtl' ? '3px solid var(--primary)' : 'none',
+                      '&:hover': {
+                        background: isActive ? 'var(--primary-glow)' : 'var(--surface-hover)',
+                        color: 'var(--primary)',
+                        '& .MuiListItemIcon-root': {
+                          color: 'var(--primary)',
+                          transform: 'scale(1.08)',
+                        }
+                      }
                     },
                     open
                       ? {
-                          marginInlineEnd: 3,
+                          justifyContent: 'initial',
                         }
                       : {
-                          marginInlineEnd: 'auto',
+                          justifyContent: 'center',
                         },
                   ]}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  sx={[
-                    open
-                      ? {
-                          opacity: 1,
-                        }
-                      : {
-                          opacity: 0,
-                        },
-                  ]}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider sx={{ borderColor: 'var(--border)' }} />
-        <List>
-          {section2Items.map((item) => (
-            <ListItem key={item.key} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
-                sx={[
-                  {
-                    minHeight: 48,
-                    px: 2.5,
-                    borderRadius: 'var(--radius-sm)',
-                    mx: 1,
-                    my: 0.5,
-                    transition: 'all var(--transition-fast)',
-                    color: 'var(--text-secondary)',
-                    '&:hover': {
-                      background: 'var(--surface-hover)',
-                      color: 'var(--primary)',
-                      '& .MuiListItemIcon-root': {
-                        color: 'var(--primary)',
-                        transform: 'scale(1.08)',
-                      }
-                    }
-                  },
-                  open
-                    ? {
-                        justifyContent: 'initial',
-                      }
-                    : {
+                  <ListItemIcon
+                    className="MuiListItemIcon-root"
+                    sx={[
+                      {
+                        minWidth: 0,
                         justifyContent: 'center',
+                        color: isActive ? 'var(--primary)' : 'var(--text-muted)',
+                        transition: 'all var(--transition-fast)',
                       },
-                ]}
-              >
-                <ListItemIcon
-                  className="MuiListItemIcon-root"
-                  sx={[
-                    {
-                      minWidth: 0,
-                      justifyContent: 'center',
-                      color: 'var(--text-muted)',
-                      transition: 'all var(--transition-fast)',
-                    },
-                    open
-                      ? {
-                          marginInlineEnd: 3,
-                        }
-                      : {
-                          marginInlineEnd: 'auto',
-                        },
-                  ]}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  sx={[
-                    open
-                      ? {
-                          opacity: 1,
-                        }
-                      : {
-                          opacity: 0,
-                        },
-                  ]}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                      open
+                        ? {
+                            marginInlineEnd: 3,
+                          }
+                        : {
+                            marginInlineEnd: 'auto',
+                          },
+                    ]}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    sx={[
+                      open
+                        ? {
+                            opacity: 1,
+                          }
+                        : {
+                            opacity: 0,
+                          },
+                    ]}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
       </Drawer>
 

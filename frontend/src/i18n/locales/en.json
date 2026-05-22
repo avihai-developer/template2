@@ -13,13 +13,29 @@
     "footer": "Antigravity Dev Template • Ready for your custom application"
   },
   "menu": {
-    "inbox": "Inbox",
-    "starred": "Starred",
-    "sendEmail": "Send email",
-    "drafts": "Drafts",
-    "allMail": "All mail",
-    "trash": "Trash",
-    "spam": "Spam"
+    "home": "Home",
+    "login": "Login",
+    "register": "Register"
+  },
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to access your premium workspace",
+    "email": "Email Address",
+    "password": "Password",
+    "submit": "Sign In",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Register here"
+  },
+  "register": {
+    "title": "Create Account",
+    "subtitle": "Get started with your clean canvas experience",
+    "fullName": "Full Name",
+    "email": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "submit": "Create Account",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Log in here"
   }
 }
 

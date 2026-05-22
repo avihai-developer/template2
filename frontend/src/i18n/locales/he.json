@@ -13,13 +13,29 @@
     "footer": "תבנית פיתוח Antigravity • מוכנה ליישום היישום המותאם שלכם"
   },
   "menu": {
-    "inbox": "תיבת דואר",
-    "starred": "מסומן בכוכב",
-    "sendEmail": "שלח אימייל",
-    "drafts": "טיוטות",
-    "allMail": "כל הדואר",
-    "trash": "אשפה",
-    "spam": "ספאם"
+    "home": "דף הבית",
+    "login": "התחברות",
+    "register": "הרשמה"
+  },
+  "login": {
+    "title": "ברוך הבא",
+    "subtitle": "היכנס כדי לגשת לסביבת העבודה היוקרתית שלך",
+    "email": "כתובת אימייל",
+    "password": "סיסמה",
+    "submit": "התחבר",
+    "noAccount": "אין לך חשבון?",
+    "registerLink": "הרשם כאן"
+  },
+  "register": {
+    "title": "יצירת חשבון",
+    "subtitle": "התחל את החוויה שלך עם לוח חלק",
+    "fullName": "שם מלא",
+    "email": "כתובת אימייל",
+    "password": "סיסמה",
+    "confirmPassword": "אימות סיסמה",
+    "submit": "צור חשבון",
+    "hasAccount": "כבר יש לך חשבון?",
+    "loginLink": "התחבר כאן"
   }
 }
 

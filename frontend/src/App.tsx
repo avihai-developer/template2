@@ -14,6 +14,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Import our layouts and page components
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 // Create Emotion caches for LTR and RTL layouts
 const cacheRtl = createCache({
@@ -155,6 +157,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<MainLayout theme={theme} setTheme={setTheme} />}>
             <Route index element={<Home />} />
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
