@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { connectDB } from './config/db';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -41,10 +42,21 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`=========================================`);
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🏥 Health check at http://localhost:${PORT}/api/health`);
-  console.log(`=========================================`);
-});
+// Start the server after connecting to MongoDB
+async function startServer() {
+  try {
+    await connectDB();
+    
+    app.listen(PORT, () => {
+      console.log(`=========================================`);
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`🏥 Health check at http://localhost:${PORT}/api/health`);
+      console.log(`=========================================`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server due to database connection error:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
