@@ -3,20 +3,9 @@
     "title": "Clean Canvas",
     "tagline": "RTL & Multi-language Enabled Template",
     "welcome": "Welcome to Your Clean Canvas",
-    "description": "All simulated components have been removed successfully. Your workspace is optimized, clean, and fully configured for bilingual translation and seamless Right-to-Left (RTL) layouts.",
+    "description": "Your workspace is optimized, clean, and fully configured. This is your premium blank canvas, ready for you to build something incredible.",
     "toggleTheme": "Toggle Theme",
     "toggleLang": "שנה שפה / Change Language",
-    "features": {
-      "title": "Configured Core Integrations",
-      "i18n": "Internationalization (i18n)",
-      "i18nDesc": "Ready-to-use translation framework supporting English and Hebrew locales out-of-the-box.",
-      "rtl": "Right-to-Left (RTL) Layouts",
-      "rtlDesc": "Automatic layout mirroring for RTL languages powered by Material-UI engine and Stylis RTL plugins.",
-      "theme": "Dynamic Styling & Dark Mode",
-      "themeDesc": "Fully customizable MUI ThemeProvider that supports dark and light modes, ready for your custom styling tokens.",
-      "routing": "React Router Architecture",
-      "routingDesc": "Clean React Router configuration for handling multi-page navigation and views smoothly."
-    },
     "cta": {
       "start": "Start Coding",
       "docs": "Read Documentation"
@@ -24,3 +13,4 @@
     "footer": "Antigravity Dev Template • Ready for your custom application"
   }
 }
+
