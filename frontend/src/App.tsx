@@ -14,7 +14,8 @@ import {
   CheckCircle2, 
   AlertTriangle,
   Sliders,
-  Send
+  Send,
+  Globe
 } from 'lucide-react';
 import {
   ThemeProvider,
@@ -36,14 +37,33 @@ import {
   DialogActions,
   Divider
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+import { prefixer } from 'stylis';
+import rtlPlugin from 'stylis-plugin-rtl';
+
+// Create caches for LTR and RTL layouts
+const cacheRtl = createCache({
+  key: 'muirtl',
+  stylisPlugins: [prefixer, rtlPlugin],
+});
+
+const cacheLtr = createCache({
+  key: 'muiltr',
+});
 
 interface ConsoleLog {
   time: string;
   type: 'info' | 'success' | 'warning';
-  text: string;
+  text?: string;
+  key?: string;
+  params?: Record<string, any>;
 }
 
 export default function App() {
+  const { t, i18n } = useTranslation();
+
   // Navigation State
   const [activeTab, setActiveTab] = useState<'overview' | 'pipelines' | 'config' | 'mui'>('overview');
   
@@ -63,13 +83,20 @@ export default function App() {
 
   // Interactive logs console
   const [logs, setLogs] = useState<ConsoleLog[]>([
-    { time: '14:10:02', type: 'info', text: 'Nexus Orchestration Hub initialized.' },
-    { time: '14:10:15', type: 'success', text: 'Secure TLS tunnel linked with remote dev environment.' },
-    { time: '14:10:39', type: 'info', text: 'Ready for client inputs.' }
+    { time: '14:10:02', type: 'info', key: 'logs.init' },
+    { time: '14:10:15', type: 'success', key: 'logs.tls' },
+    { time: '14:10:39', type: 'info', key: 'logs.ready' }
   ]);
 
   // Dialog State
   const [auditOpen, setAuditOpen] = useState(false);
+
+  // Syncing Language/Direction Changes
+  useEffect(() => {
+    const isRtl = i18n.language === 'he';
+    document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', i18n.language);
+  }, [i18n.language]);
 
   // Dynamic MUI Theme
   const muiTheme = useMemo(() => {
@@ -82,6 +109,7 @@ export default function App() {
     const borderColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(140, 120, 240, 0.12)';
 
     return createTheme({
+      direction: i18n.language === 'he' ? 'rtl' : 'ltr',
       palette: {
         mode: theme,
         primary: {
@@ -282,7 +310,7 @@ export default function App() {
         },
       },
     });
-  }, [theme, hue]);
+  }, [theme, hue, i18n.language]);
 
   // Syncing Theme Changes
   useEffect(() => {
@@ -314,42 +342,49 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  const addLog = (text: string, type: 'info' | 'success' | 'warning' = 'info') => {
+  const addLog = (textOrKey: string, type: 'info' | 'success' | 'warning' = 'info', params?: Record<string, any>) => {
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    setLogs(prev => [{ time: timestamp, type, text }, ...prev.slice(0, 15)]);
+    const isKey = textOrKey.includes('.');
+    const newLog: ConsoleLog = isKey
+      ? { time: timestamp, type, key: textOrKey, params }
+      : { time: timestamp, type, text: textOrKey };
+    setLogs(prev => [newLog, ...prev.slice(0, 15)]);
   };
 
   const handleRunPipeline = () => {
     if (!sandboxInput.trim()) return;
     setSandboxStatus('running');
-    addLog(`Initiating user command pipeline: "${sandboxInput}"`, 'info');
+    addLog('logs.runPipeline', 'info', { input: sandboxInput });
     
     setTimeout(() => {
       const isSuccess = Math.random() > 0.15;
       if (isSuccess) {
         setSandboxStatus('success');
         setPipelinesActive(prev => Math.min(prev + 1, 9));
-        addLog(`Pipeline successful for target: "${sandboxInput}"`, 'success');
+        addLog('logs.pipelineSuccess', 'success', { input: sandboxInput });
       } else {
         setSandboxStatus('failed');
-        addLog(`Pipeline execution aborted. Code 127 in step 'Linting Audit'`, 'warning');
+        addLog('logs.pipelineFailed', 'warning');
       }
     }, 2000);
   };
 
   const handleSystemAudit = () => {
-    addLog('Executing comprehensive cluster and linting audit...', 'info');
+    addLog('logs.executingAudit', 'info');
     setAuditOpen(true);
     setTimeout(() => {
-      addLog('Zero major vulnerabilities identified in workspace dependencies.', 'success');
-      addLog('Standard code quality rules passed with 100% compliance.', 'success');
+      addLog('logs.auditNoVulnerabilities', 'success');
+      addLog('logs.auditCompliance', 'success');
     }, 1200);
   };
 
+  const currentCache = i18n.language === 'he' ? cacheRtl : cacheLtr;
+
   return (
-    <ThemeProvider theme={muiTheme}>
-      <CssBaseline />
-      <div className="app-container">
+    <CacheProvider value={currentCache}>
+      <ThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        <div className="app-container">
         {/* Background glowing orbs */}
         <div className="ambient-glow glow-1"></div>
         <div className="ambient-glow glow-2"></div>
@@ -361,7 +396,7 @@ export default function App() {
             <Zap size={22} fill="currentColor" />
           </div>
           <div>
-            <span className="logo-text">Nexus Template</span>
+            <span className="logo-text">{t('sidebar.title')}</span>
           </div>
         </div>
 
@@ -371,40 +406,40 @@ export default function App() {
               <button 
                 onClick={() => setActiveTab('overview')} 
                 className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
-                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
+                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'start' }}
               >
                 <LayoutDashboard size={18} />
-                Overview Dashboard
+                {t('sidebar.overview')}
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('pipelines')} 
                 className={`nav-item ${activeTab === 'pipelines' ? 'active' : ''}`}
-                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
+                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'start' }}
               >
                 <PlayCircle size={18} />
-                Pipeline Control
+                {t('sidebar.pipelines')}
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('config')} 
                 className={`nav-item ${activeTab === 'config' ? 'active' : ''}`}
-                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
+                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'start' }}
               >
                 <Settings size={18} />
-                Workspace Settings
+                {t('sidebar.settings')}
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('mui')} 
                 className={`nav-item ${activeTab === 'mui' ? 'active' : ''}`}
-                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
+                style={{ width: '100%', border: 'none', background: 'none', textAlign: 'start' }}
               >
                 <Layers size={18} />
-                MUI Playground
+                {t('sidebar.mui')}
               </button>
             </li>
           </ul>
@@ -415,17 +450,28 @@ export default function App() {
           <div className="user-profile">
             <div className="user-avatar">AG</div>
             <div className="user-info">
-              <span className="user-name">Developer Mode</span>
-              <span className="user-role">Workspace Admin</span>
+              <span className="user-name">{t('sidebar.devMode')}</span>
+              <span className="user-role">{t('sidebar.admin')}</span>
             </div>
           </div>
-          <button 
-            className="theme-toggle" 
-            onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-            aria-label="Toggle Theme"
-          >
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              className="theme-toggle" 
+              onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'he' : 'en')}
+              title={t('sidebar.toggleLang')}
+              aria-label={t('sidebar.toggleLang')}
+            >
+              <Globe size={18} />
+            </button>
+            <button 
+              className="theme-toggle" 
+              onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+              title={t('sidebar.toggleTheme')}
+              aria-label={t('sidebar.toggleTheme')}
+            >
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -436,27 +482,27 @@ export default function App() {
         <header className="dashboard-header">
           <div className="header-title-sec">
             <h1>
-              {activeTab === 'overview' && 'System Analytics Overview'}
-              {activeTab === 'pipelines' && 'Pipeline Orchestration & Sandbox'}
-              {activeTab === 'config' && 'Custom Theme Engine'}
-              {activeTab === 'mui' && 'Material-UI Dashboard Showcase'}
+              {activeTab === 'overview' && t('header.titles.overview')}
+              {activeTab === 'pipelines' && t('header.titles.pipelines')}
+              {activeTab === 'config' && t('header.titles.config')}
+              {activeTab === 'mui' && t('header.titles.mui')}
             </h1>
             <p className="header-subtitle">
-              {activeTab === 'overview' && 'Real-time telemetry diagnostics and active node statistics.'}
-              {activeTab === 'pipelines' && 'Execute pipelines, write commands, and monitor terminal activities.'}
-              {activeTab === 'config' && 'Configure custom workspace styling and real-time color tokens.'}
-              {activeTab === 'mui' && 'Interactive playground showing premium custom-themed MUI components.'}
+              {activeTab === 'overview' && t('header.subtitles.overview')}
+              {activeTab === 'pipelines' && t('header.subtitles.pipelines')}
+              {activeTab === 'config' && t('header.subtitles.config')}
+              {activeTab === 'mui' && t('header.subtitles.mui')}
             </p>
           </div>
           
           <div className="header-actions">
-            <button className="btn btn-secondary" onClick={() => addLog('System configuration settings synced.', 'info')}>
+            <button className="btn btn-secondary" onClick={() => addLog('logs.settingsSynced', 'info')}>
               <RefreshCw size={15} />
-              Sync Setup
+              {t('header.sync')}
             </button>
             <button className="btn btn-primary" onClick={handleSystemAudit}>
               <CheckCircle2 size={15} />
-              Audit Cluster
+              {t('header.audit')}
             </button>
           </div>
         </header>
@@ -465,53 +511,53 @@ export default function App() {
         <section className="metrics-grid">
           <div className="metric-card glass glass-interactive">
             <div className="metric-header">
-              <span className="metric-title">CPU Compute Capacity</span>
+              <span className="metric-title">{t('metrics.cpuTitle')}</span>
               <div className="metric-icon-wrapper" style={{ background: 'rgba(140, 120, 240, 0.1)', color: 'var(--primary)' }}>
                 <Cpu size={18} />
               </div>
             </div>
             <span className="metric-value">{cpu}%</span>
             <div className={`metric-trend ${cpu > 50 ? 'down' : 'up'}`}>
-              <Zap size={12} fill="currentColor" /> {cpu > 50 ? 'High compute spike' : 'Nominal load'}
+              <Zap size={12} fill="currentColor" /> {cpu > 50 ? t('metrics.cpuTrendHigh') : t('metrics.cpuTrendNominal')}
             </div>
           </div>
 
           <div className="metric-card glass glass-interactive">
             <div className="metric-header">
-              <span className="metric-title">Active Node Channels</span>
+              <span className="metric-title">{t('metrics.channelsTitle')}</span>
               <div className="metric-icon-wrapper" style={{ background: 'rgba(6, 182, 212, 0.1)', color: 'var(--secondary)' }}>
                 <Layers size={18} />
               </div>
             </div>
-            <span className="metric-value">{pipelinesActive} Channels</span>
+            <span className="metric-value">{t('metrics.channelsValue', { count: pipelinesActive })}</span>
             <div className="metric-trend up">
-              <CheckCircle2 size={12} fill="currentColor" /> Stable orchestration
+              <CheckCircle2 size={12} fill="currentColor" /> {t('metrics.channelsTrend')}
             </div>
           </div>
 
           <div className="metric-card glass glass-interactive">
             <div className="metric-header">
-              <span className="metric-title">Websocket Sync Latency</span>
+              <span className="metric-title">{t('metrics.latencyTitle')}</span>
               <div className="metric-icon-wrapper" style={{ background: 'rgba(236, 72, 153, 0.1)', color: 'var(--accent)' }}>
                 <Terminal size={18} />
               </div>
             </div>
             <span className="metric-value">{latency}ms</span>
             <div className="metric-trend up">
-              <Zap size={12} fill="currentColor" /> Ultra-low ping
+              <Zap size={12} fill="currentColor" /> {t('metrics.latencyTrend')}
             </div>
           </div>
 
           <div className="metric-card glass glass-interactive">
             <div className="metric-header">
-              <span className="metric-title">System Memory Load</span>
+              <span className="metric-title">{t('metrics.memoryTitle')}</span>
               <div className="metric-icon-wrapper" style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--success)' }}>
                 <Layers size={18} />
               </div>
             </div>
             <span className="metric-value">{memory} GB</span>
             <div className="metric-trend up">
-              <CheckCircle2 size={12} fill="currentColor" /> System optimal
+              <CheckCircle2 size={12} fill="currentColor" /> {t('metrics.memoryTrend')}
             </div>
           </div>
         </section>
@@ -524,32 +570,32 @@ export default function App() {
               <div className="section-header">
                 <span className="section-title">
                   <PlayCircle size={20} style={{ color: 'var(--primary)' }} />
-                  Weekly Compute Distribution
+                  {t('tabs.overview.computeTitle')}
                 </span>
-                <span className="tag tag-purple">Real-time Stream</span>
+                <span className="tag tag-purple">{t('tabs.overview.realtime')}</span>
               </div>
               
               <div className="chart-container">
                 <div className="chart-bars">
                   <div className="chart-bar-wrapper">
-                    <div className="chart-bar" style={{ height: '40px' }}><span className="chart-bar-tooltip">Monday: 20%</span></div>
-                    <span className="chart-label">Mon</span>
+                    <div className="chart-bar" style={{ height: '40px' }}><span className="chart-bar-tooltip">{t('tabs.overview.monday', { percent: 20 })}</span></div>
+                    <span className="chart-label">{t('tabs.overview.mon')}</span>
                   </div>
                   <div className="chart-bar-wrapper">
-                    <div className="chart-bar" style={{ height: '70px' }}><span className="chart-bar-tooltip">Tuesday: 35%</span></div>
-                    <span className="chart-label">Tue</span>
+                    <div className="chart-bar" style={{ height: '70px' }}><span className="chart-bar-tooltip">{t('tabs.overview.tuesday', { percent: 35 })}</span></div>
+                    <span className="chart-label">{t('tabs.overview.tue')}</span>
                   </div>
                   <div className="chart-bar-wrapper">
-                    <div className="chart-bar" style={{ height: '110px' }}><span className="chart-bar-tooltip">Wednesday: 55%</span></div>
-                    <span className="chart-label">Wed</span>
+                    <div className="chart-bar" style={{ height: '110px' }}><span className="chart-bar-tooltip">{t('tabs.overview.wednesday', { percent: 55 })}</span></div>
+                    <span className="chart-label">{t('tabs.overview.wed')}</span>
                   </div>
                   <div className="chart-bar-wrapper">
-                    <div className="chart-bar" style={{ height: '160px' }}><span className="chart-bar-tooltip">Thursday: 80%</span></div>
-                    <span className="chart-label">Thu</span>
+                    <div className="chart-bar" style={{ height: '160px' }}><span className="chart-bar-tooltip">{t('tabs.overview.thursday', { percent: 80 })}</span></div>
+                    <span className="chart-label">{t('tabs.overview.thu')}</span>
                   </div>
                   <div className="chart-bar-wrapper">
-                    <div className="chart-bar" style={{ height: `${cpu * 2}px` }}><span className="chart-bar-tooltip">Today (Live): {cpu}%</span></div>
-                    <span className="chart-label" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Live</span>
+                    <div className="chart-bar" style={{ height: `${cpu * 2}px` }}><span className="chart-bar-tooltip">{t('tabs.overview.today', { percent: cpu })}</span></div>
+                    <span className="chart-label" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{t('tabs.overview.live')}</span>
                   </div>
                 </div>
               </div>
@@ -560,25 +606,25 @@ export default function App() {
               <div className="section-header">
                 <span className="section-title">
                   <Sliders size={20} style={{ color: 'var(--secondary)' }} />
-                  Quick Actions
+                  {t('tabs.overview.quickActions')}
                 </span>
               </div>
               
               <div className="quick-actions-list">
-                <button className="action-btn" onClick={() => addLog('Flushed dev environment caches.', 'success')}>
+                <button className="action-btn" onClick={() => addLog('logs.cacheFlushed', 'success')}>
                   <RefreshCw className="action-btn-icon" />
-                  Flush Cache
+                  {t('tabs.overview.flushCache')}
                 </button>
-                <button className="action-btn" onClick={() => addLog('Re-indexing local workspace directories.', 'info')}>
+                <button className="action-btn" onClick={() => addLog('logs.reindexing', 'info')}>
                   <FolderGit2 className="action-btn-icon" />
-                  Index Files
+                  {t('tabs.overview.indexFiles')}
                 </button>
                 <button className="action-btn" onClick={() => {
                   setPipelinesActive(3);
-                  addLog('Orchestration nodes safely reset to default baseline.', 'warning');
+                  addLog('logs.nodesReset', 'warning');
                 }}>
                   <AlertTriangle className="action-btn-icon" style={{ color: 'var(--warning)' }} />
-                  Reset Nodes
+                  {t('tabs.overview.resetNodes')}
                 </button>
               </div>
             </div>
@@ -591,16 +637,16 @@ export default function App() {
               <div className="section-header">
                 <span className="section-title">
                   <PlayCircle size={20} style={{ color: 'var(--primary)' }} />
-                  Interactive Pipeline Sandbox
+                  {t('tabs.pipelines.sandboxTitle')}
                 </span>
-                {sandboxStatus === 'running' && <span className="tag tag-cyan">Running...</span>}
-                {sandboxStatus === 'success' && <span className="tag tag-success">Pipeline Passed</span>}
-                {sandboxStatus === 'failed' && <span className="tag tag-purple" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>Pipeline Failed</span>}
-                {sandboxStatus === 'idle' && <span className="tag tag-purple">Ready</span>}
+                {sandboxStatus === 'running' && <span className="tag tag-cyan">{t('tabs.pipelines.statusRunning')}</span>}
+                {sandboxStatus === 'success' && <span className="tag tag-success">{t('tabs.pipelines.statusPassed')}</span>}
+                {sandboxStatus === 'failed' && <span className="tag tag-purple" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>{t('tabs.pipelines.statusFailed')}</span>}
+                {sandboxStatus === 'idle' && <span className="tag tag-purple">{t('tabs.pipelines.statusReady')}</span>}
               </div>
 
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-                Simulate task runners, code build workflows, or deployment sequences. Enter a command script below to run.
+                {t('tabs.pipelines.description')}
               </p>
 
               <div style={{ display: 'flex', gap: '12px', width: '100%', marginBottom: '1.5rem', alignItems: 'center' }}>
@@ -610,15 +656,15 @@ export default function App() {
                   size="small"
                   value={sandboxInput}
                   onChange={(e) => setSandboxInput(e.target.value)}
-                  placeholder="e.g. npm run build"
+                  placeholder={t('tabs.pipelines.placeholder')}
                   disabled={sandboxStatus === 'running'}
                   sx={{
-                    flexGrow: 1,
-                    '& .MuiInputBase-input': {
-                      color: 'var(--text-primary)',
-                      padding: '12px 16px',
-                      fontSize: '0.95rem'
-                    }
+                     flexGrow: 1,
+                     '& .MuiInputBase-input': {
+                       color: 'var(--text-primary)',
+                       padding: '12px 16px',
+                       fontSize: '0.95rem'
+                     }
                   }}
                 />
                 <MuiButton 
@@ -629,7 +675,7 @@ export default function App() {
                   startIcon={sandboxStatus === 'running' ? <CircularProgress size={16} color="inherit" /> : <Send size={15} />}
                   sx={{ height: '48px', px: 3 }}
                 >
-                  {sandboxStatus === 'running' ? 'Executing...' : 'Run Sequence'}
+                  {sandboxStatus === 'running' ? t('tabs.pipelines.executingBtn') : t('tabs.pipelines.runBtn')}
                 </MuiButton>
               </div>
 
@@ -637,17 +683,17 @@ export default function App() {
                 <Box sx={{ mt: 1, mb: 2 }}>
                   {sandboxStatus === 'success' && (
                     <MuiAlert severity="success">
-                      Pipeline succeeded! Executed target: "{sandboxInput}"
+                      {t('tabs.pipelines.alertSuccess', { input: sandboxInput })}
                     </MuiAlert>
                   )}
                   {sandboxStatus === 'failed' && (
                     <MuiAlert severity="error">
-                      Pipeline execution aborted. Code 127 in step 'Linting Audit'.
+                      {t('tabs.pipelines.alertFailed')}
                     </MuiAlert>
                   )}
                   {sandboxStatus === 'running' && (
                     <MuiAlert severity="info">
-                      Sequence initiated. Connecting to dev environment...
+                      {t('tabs.pipelines.alertInfo')}
                     </MuiAlert>
                   )}
                 </Box>
@@ -680,19 +726,19 @@ export default function App() {
               <div className="section-header">
                 <span className="section-title">
                   <Sliders size={20} style={{ color: 'var(--primary)' }} />
-                  Dynamic Real-Time Theme customizer
+                  {t('tabs.config.customizerTitle')}
                 </span>
               </div>
               
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                Slide the hue controller to dynamically change the primary core color values across the template.
+                {t('tabs.config.description')}
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', margin: '2rem 0' }}>
                 {/* Native HTML Slider */}
-                <div className="form-group" style={{ borderRight: '1px solid var(--border)', paddingRight: '20px' }}>
+                <div className="form-group" style={{ borderInlineEnd: '1px solid var(--border)', paddingInlineEnd: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '8px' }}>
-                    <span style={{ color: 'var(--text-primary)' }}>Native Range Control</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{t('tabs.config.nativeControl')}</span>
                     <span style={{ color: 'var(--primary)' }}>{hue}°</span>
                   </div>
                   <input 
@@ -711,17 +757,17 @@ export default function App() {
                     }} 
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    <span>0° Red</span>
-                    <span>120° Green</span>
-                    <span>240° Blue</span>
-                    <span>360° Wrap</span>
+                    <span>{t('tabs.config.red')}</span>
+                    <span>{t('tabs.config.green')}</span>
+                    <span>{t('tabs.config.blue')}</span>
+                    <span>{t('tabs.config.wrap')}</span>
                   </div>
                 </div>
 
                 {/* MUI Slider Counterpart */}
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', mb: 1.5, color: 'var(--text-primary)' }}>
-                    <span>Material-UI Slider Control</span>
+                    <span>{t('tabs.config.muiControl')}</span>
                     <span style={{ color: 'var(--primary)' }}>{hue}°</span>
                   </Typography>
                   <MuiSlider
@@ -732,18 +778,18 @@ export default function App() {
                     aria-label="MUI HSL Hue Slider"
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
-                    <span>0° Red</span>
-                    <span>120° Green</span>
-                    <span>240° Blue</span>
-                    <span>360° Wrap</span>
+                    <span>{t('tabs.config.red')}</span>
+                    <span>{t('tabs.config.green')}</span>
+                    <span>{t('tabs.config.blue')}</span>
+                    <span>{t('tabs.config.wrap')}</span>
                   </div>
                 </Box>
               </div>
 
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', gap: '12px' }}>
-                <button className="btn btn-secondary" onClick={() => setHue(258)}>Reset Theme to Purple Default</button>
-                <button className="btn btn-secondary" onClick={() => setHue(195)}>Switch to Electric Cyan</button>
-                <button className="btn btn-secondary" onClick={() => setHue(15)}>Switch to Crimson Neon</button>
+                <button className="btn btn-secondary" onClick={() => setHue(258)}>{t('tabs.config.resetBtn')}</button>
+                <button className="btn btn-secondary" onClick={() => setHue(195)}>{t('tabs.config.cyanBtn')}</button>
+                <button className="btn btn-secondary" onClick={() => setHue(15)}>{t('tabs.config.crimsonBtn')}</button>
               </div>
             </div>
           </div>
@@ -756,13 +802,13 @@ export default function App() {
               <div className="section-header" style={{ marginBottom: '1.5rem' }}>
                 <span className="section-title">
                   <Cpu size={20} style={{ color: 'var(--primary)' }} />
-                  Telemetry Visualization (MUI Progress)
+                  {t('tabs.mui.telemetryTitle')}
                 </span>
-                <span className="tag tag-purple">Active Feeds</span>
+                <span className="tag tag-purple">{t('tabs.mui.activeFeeds')}</span>
               </div>
 
               <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 3 }}>
-                Real-time metrics rendered using customized Material-UI indicators. Notice how they smoothly adapt to color hue changes and system load updates.
+                {t('tabs.mui.description')}
               </Typography>
 
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, mb: 4, justifyContent: 'space-around', alignItems: 'center' }}>
@@ -806,7 +852,7 @@ export default function App() {
                     </Box>
                   </Box>
                   <Typography variant="caption" sx={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-                    CPU UTILIZATION
+                    {t('tabs.mui.cpuUtil')}
                   </Typography>
                 </Box>
 
@@ -850,7 +896,7 @@ export default function App() {
                     </Box>
                   </Box>
                   <Typography variant="caption" sx={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-                    SYNC LATENCY
+                    {t('tabs.mui.syncLatency')}
                   </Typography>
                 </Box>
               </Box>
@@ -859,7 +905,7 @@ export default function App() {
               <Box sx={{ width: '100%', mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Memory Load ({memory} GB / 8.0 GB)
+                    {t('tabs.mui.memoryLoad', { memory })}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'var(--success)' }}>
                     {Math.round((memory / 8) * 100)}%
@@ -886,19 +932,19 @@ export default function App() {
               <div className="section-header" style={{ marginBottom: '1rem' }}>
                 <span className="section-title">
                   <Layers size={20} style={{ color: 'var(--primary)' }} />
-                  UI Components Showcase
+                  {t('tabs.mui.showcaseTitle')}
                 </span>
               </div>
 
               <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 3 }}>
-                Premium custom components highlighting state control, tooltips, and badges.
+                {t('tabs.mui.showcaseDesc')}
               </Typography>
 
               {/* Status Chips */}
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-                <Tooltip title="Orchestrator online and operating within specifications" arrow placement="top">
+                <Tooltip title={t('tabs.mui.tooltipStable')} arrow placement="top">
                   <Chip 
-                    label="Orchestrator Stable" 
+                    label={t('tabs.mui.chipStable')} 
                     size="small" 
                     sx={{ 
                       backgroundColor: 'rgba(16, 185, 129, 0.1)', 
@@ -908,9 +954,9 @@ export default function App() {
                     }} 
                   />
                 </Tooltip>
-                <Tooltip title="Real-time web socket latency is nominal" arrow placement="top">
+                <Tooltip title={t('tabs.mui.tooltipSync')} arrow placement="top">
                   <Chip 
-                    label="WebSocket Sync" 
+                    label={t('tabs.mui.chipSync')} 
                     size="small" 
                     sx={{ 
                       backgroundColor: 'rgba(6, 182, 212, 0.1)', 
@@ -920,9 +966,9 @@ export default function App() {
                     }} 
                   />
                 </Tooltip>
-                <Tooltip title="Dynamic palette customizer is active" arrow placement="top">
+                <Tooltip title={t('tabs.mui.tooltipTheme')} arrow placement="top">
                   <Chip 
-                    label="Dynamic Theme Active" 
+                    label={t('tabs.mui.chipTheme')} 
                     size="small" 
                     sx={{ 
                       backgroundColor: `hsla(${hue}, 85%, 58%, 0.12)`, 
@@ -938,25 +984,25 @@ export default function App() {
 
               {/* Action Buttons */}
               <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 700, color: 'var(--text-primary)' }}>
-                Dynamic MUI Action Overrides
+                {t('tabs.mui.overridesTitle')}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <MuiButton 
                   variant="contained" 
                   color="primary"
-                  onClick={() => addLog('Material-UI primary button action triggered.', 'success')}
+                  onClick={() => addLog('logs.muiPrimary', 'success')}
                 >
-                  Dynamic Primary Button
+                  {t('tabs.mui.primaryBtn')}
                 </MuiButton>
                 <MuiButton 
                   variant="outlined" 
-                  onClick={() => addLog('Material-UI outlined button action triggered.', 'info')}
+                  onClick={() => addLog('logs.muiOutlined', 'info')}
                   sx={{
                     borderColor: 'var(--primary)',
                     color: 'var(--primary)'
                   }}
                 >
-                  Dynamic Outlined Button
+                  {t('tabs.mui.outlinedBtn')}
                 </MuiButton>
               </Box>
             </div>
@@ -969,7 +1015,7 @@ export default function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1rem', fontWeight: 700 }}>
                 <Terminal size={18} style={{ color: 'var(--primary)' }} />
-                Real-time System Orchestrator Console
+                {t('console.title')}
               </div>
               <button 
                 onClick={() => setLogs([])}
@@ -982,13 +1028,13 @@ export default function App() {
                   fontWeight: 600
                 }}
               >
-                Clear Output
+                {t('console.clear')}
               </button>
             </div>
             
             <div className="console-panel">
               {logs.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)', padding: '10px 0' }}>[Terminal empty - awaiting activities]</div>
+                <div style={{ color: 'var(--text-muted)', padding: '10px 0' }}>{t('console.empty')}</div>
               ) : (
                 logs.map((log, idx) => (
                   <div key={idx} className="console-line">
@@ -999,7 +1045,7 @@ export default function App() {
                       'console-text'
                     }>
                       {log.type === 'warning' ? '⚠️ ' : log.type === 'success' ? '✔ ' : 'ℹ '}
-                      {log.text}
+                      {log.key ? t(log.key, log.params) : log.text}
                     </span>
                   </div>
                 ))
@@ -1028,32 +1074,32 @@ export default function App() {
       >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 800, color: 'var(--text-primary)', pt: 3 }}>
           <CheckCircle2 size={24} style={{ color: 'var(--success)' }} />
-          Cluster Security Audit Complete
+          {t('auditDialog.title')}
         </DialogTitle>
         <DialogContent sx={{ color: 'var(--text-secondary)' }}>
           <Typography variant="body2" sx={{ mb: 2, color: 'var(--text-muted)', mt: 1 }}>
-            System environment scanned thoroughly.
+            {t('auditDialog.subtitle')}
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'start', gap: 1.5 }}>
               <div style={{ color: 'var(--success)', marginTop: '2px' }}>✔</div>
               <div>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>Package Dependencies Secured</Typography>
-                <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>Analyzed all npm node_modules packages. Zero high or critical alerts flagged.</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>{t('auditDialog.secTitle')}</Typography>
+                <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>{t('auditDialog.secDesc')}</Typography>
               </div>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'start', gap: 1.5 }}>
               <div style={{ color: 'var(--success)', marginTop: '2px' }}>✔</div>
               <div>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>React 19 & MUI Integration Verified</Typography>
-                <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>Peer dependencies fully compiled and optimized in sandbox memory node.</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>{t('auditDialog.reactTitle')}</Typography>
+                <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>{t('auditDialog.reactDesc')}</Typography>
               </div>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'start', gap: 1.5 }}>
               <div style={{ color: 'var(--success)', marginTop: '2px' }}>✔</div>
               <div>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>Standard Quality Score: 100%</Typography>
-                <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>ESLint rules complied. Safe module bounds checked successfully.</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>{t('auditDialog.qualityTitle')}</Typography>
+                <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>{t('auditDialog.qualityDesc')}</Typography>
               </div>
             </Box>
           </Box>
@@ -1064,11 +1110,12 @@ export default function App() {
             onClick={() => setAuditOpen(false)}
             sx={{ px: 3 }}
           >
-            Acknowledge Audit
+            {t('auditDialog.ack')}
           </MuiButton>
         </DialogActions>
       </Dialog>
     </div>
     </ThemeProvider>
+    </CacheProvider>
   );
 }
