@@ -1,140 +1,26 @@
 {
-  "sidebar": {
-    "title": "Nexus Template",
-    "overview": "Overview Dashboard",
-    "pipelines": "Pipeline Control",
-    "settings": "Workspace Settings",
-    "mui": "MUI Playground",
-    "devMode": "Developer Mode",
-    "admin": "Workspace Admin",
+  "app": {
+    "title": "Clean Canvas",
+    "tagline": "RTL & Multi-language Enabled Template",
+    "welcome": "Welcome to Your Clean Canvas",
+    "description": "All simulated components have been removed successfully. Your workspace is optimized, clean, and fully configured for bilingual translation and seamless Right-to-Left (RTL) layouts.",
     "toggleTheme": "Toggle Theme",
-    "toggleLang": "Change Language"
-  },
-  "header": {
-    "titles": {
-      "overview": "System Analytics Overview",
-      "pipelines": "Pipeline Orchestration & Sandbox",
-      "config": "Custom Theme Engine",
-      "mui": "Material-UI Dashboard Showcase"
+    "toggleLang": "שנה שפה / Change Language",
+    "features": {
+      "title": "Configured Core Integrations",
+      "i18n": "Internationalization (i18n)",
+      "i18nDesc": "Ready-to-use translation framework supporting English and Hebrew locales out-of-the-box.",
+      "rtl": "Right-to-Left (RTL) Layouts",
+      "rtlDesc": "Automatic layout mirroring for RTL languages powered by Material-UI engine and Stylis RTL plugins.",
+      "theme": "Dynamic Styling & Dark Mode",
+      "themeDesc": "Fully customizable MUI ThemeProvider that supports dark and light modes, ready for your custom styling tokens.",
+      "routing": "React Router Architecture",
+      "routingDesc": "Clean React Router configuration for handling multi-page navigation and views smoothly."
     },
-    "subtitles": {
-      "overview": "Real-time telemetry diagnostics and active node statistics.",
-      "pipelines": "Execute pipelines, write commands, and monitor terminal activities.",
-      "config": "Configure custom workspace styling and real-time color tokens.",
-      "mui": "Interactive playground showing premium custom-themed MUI components."
+    "cta": {
+      "start": "Start Coding",
+      "docs": "Read Documentation"
     },
-    "sync": "Sync Setup",
-    "audit": "Audit Cluster"
-  },
-  "metrics": {
-    "cpuTitle": "CPU Compute Capacity",
-    "cpuTrendHigh": "High compute spike",
-    "cpuTrendNominal": "Nominal load",
-    "channelsTitle": "Active Node Channels",
-    "channelsValue": "{{count}} Channels",
-    "channelsTrend": "Stable orchestration",
-    "latencyTitle": "Websocket Sync Latency",
-    "latencyTrend": "Ultra-low ping",
-    "memoryTitle": "System Memory Load",
-    "memoryTrend": "System optimal"
-  },
-  "tabs": {
-    "overview": {
-      "computeTitle": "Weekly Compute Distribution",
-      "realtime": "Real-time Stream",
-      "monday": "Monday: {{percent}}%",
-      "tuesday": "Tuesday: {{percent}}%",
-      "wednesday": "Wednesday: {{percent}}%",
-      "thursday": "Thursday: {{percent}}%",
-      "today": "Today (Live): {{percent}}%",
-      "mon": "Mon",
-      "tue": "Tue",
-      "wed": "Wed",
-      "thu": "Thu",
-      "live": "Live",
-      "quickActions": "Quick Actions",
-      "flushCache": "Flush Cache",
-      "indexFiles": "Index Files",
-      "resetNodes": "Reset Nodes"
-    },
-    "pipelines": {
-      "sandboxTitle": "Interactive Pipeline Sandbox",
-      "statusRunning": "Running...",
-      "statusPassed": "Pipeline Passed",
-      "statusFailed": "Pipeline Failed",
-      "statusReady": "Ready",
-      "description": "Simulate task runners, code build workflows, or deployment sequences. Enter a command script below to run.",
-      "placeholder": "e.g. npm run build",
-      "runBtn": "Run Sequence",
-      "executingBtn": "Executing...",
-      "alertSuccess": "Pipeline succeeded! Executed target: \"{{input}}\"",
-      "alertFailed": "Pipeline execution aborted. Code 127 in step 'Linting Audit'.",
-      "alertInfo": "Sequence initiated. Connecting to dev environment..."
-    },
-    "config": {
-      "customizerTitle": "Dynamic Real-Time Theme customizer",
-      "description": "Slide the hue controller to dynamically change the primary core color values across the template.",
-      "nativeControl": "Native Range Control",
-      "muiControl": "Material-UI Slider Control",
-      "red": "0° Red",
-      "green": "120° Green",
-      "blue": "240° Blue",
-      "wrap": "360° Wrap",
-      "resetBtn": "Reset Theme to Purple Default",
-      "cyanBtn": "Switch to Electric Cyan",
-      "crimsonBtn": "Switch to Crimson Neon"
-    },
-    "mui": {
-      "telemetryTitle": "Telemetry Visualization (MUI Progress)",
-      "activeFeeds": "Active Feeds",
-      "description": "Real-time metrics rendered using customized Material-UI indicators. Notice how they smoothly adapt to color hue changes and system load updates.",
-      "cpuUtil": "CPU UTILIZATION",
-      "syncLatency": "SYNC LATENCY",
-      "memoryLoad": "Memory Load ({{memory}} GB / 8.0 GB)",
-      "showcaseTitle": "UI Components Showcase",
-      "showcaseDesc": "Premium custom components highlighting state control, tooltips, and badges.",
-      "chipStable": "Orchestrator Stable",
-      "tooltipStable": "Orchestrator online and operating within specifications",
-      "chipSync": "WebSocket Sync",
-      "tooltipSync": "Real-time web socket latency is nominal",
-      "chipTheme": "Dynamic Theme Active",
-      "tooltipTheme": "Dynamic palette customizer is active",
-      "overridesTitle": "Dynamic MUI Action Overrides",
-      "primaryBtn": "Dynamic Primary Button",
-      "outlinedBtn": "Dynamic Outlined Button"
-    }
-  },
-  "console": {
-    "title": "Real-time System Orchestrator Console",
-    "clear": "Clear Output",
-    "empty": "[Terminal empty - awaiting activities]"
-  },
-  "logs": {
-    "init": "Nexus Orchestration Hub initialized.",
-    "tls": "Secure TLS tunnel linked with remote dev environment.",
-    "ready": "Ready for client inputs.",
-    "runPipeline": "Initiating user command pipeline: \"{{input}}\"",
-    "pipelineSuccess": "Pipeline successful for target: \"{{input}}\"",
-    "pipelineFailed": "Pipeline execution aborted. Code 127 in step 'Linting Audit'",
-    "executingAudit": "Executing comprehensive cluster and linting audit...",
-    "auditNoVulnerabilities": "Zero major vulnerabilities identified in workspace dependencies.",
-    "auditCompliance": "Standard code quality rules passed with 100% compliance.",
-    "cacheFlushed": "Flushed dev environment caches.",
-    "reindexing": "Re-indexing local workspace directories.",
-    "nodesReset": "Orchestration nodes safely reset to default baseline.",
-    "muiPrimary": "Material-UI primary button action triggered.",
-    "muiOutlined": "Material-UI outlined button action triggered.",
-    "settingsSynced": "System configuration settings synced."
-  },
-  "auditDialog": {
-    "title": "Cluster Security Audit Complete",
-    "subtitle": "System environment scanned thoroughly.",
-    "secTitle": "Package Dependencies Secured",
-    "secDesc": "Analyzed all npm node_modules packages. Zero high or critical alerts flagged.",
-    "reactTitle": "React 19 & MUI Integration Verified",
-    "reactDesc": "Peer dependencies fully compiled and optimized in sandbox memory node.",
-    "qualityTitle": "Standard Quality Score: 100%",
-    "qualityDesc": "ESLint rules complied. Safe module bounds checked successfully.",
-    "ack": "Acknowledge Audit"
+    "footer": "Antigravity Dev Template • Ready for your custom application"
   }
 }
