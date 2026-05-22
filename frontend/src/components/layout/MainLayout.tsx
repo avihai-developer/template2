@@ -147,6 +147,24 @@ const colorPresets = [
   { name: 'Rose Pink', hue: 330, color: 'hsl(330, 85%, 58%)' },
 ];
 
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  s /= 100;
+  l /= 100;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) =>
+    l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  return [f(0), f(8), f(4)];
+}
+
+const checkIsColorBright = (hue: number, mode: 'light' | 'dark'): boolean => {
+  const s = mode === 'dark' ? 90 : 85;
+  const l = mode === 'dark' ? 65 : 58;
+  const [r, g, b] = hslToRgb(hue, s, l);
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.55;
+};
+
 interface MainLayoutProps {
   theme: 'light' | 'dark';
   setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
@@ -170,6 +188,8 @@ export default function MainLayout({
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+
+  const isBright = React.useMemo(() => checkIsColorBright(primaryHue, theme), [primaryHue, theme]);
 
   // Profile dropdown menu state
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -246,7 +266,7 @@ export default function MainLayout({
           backdropFilter: 'none !important',
           WebkitBackdropFilter: 'none !important',
           opacity: '1 !important',
-          color: '#ffffff !important',
+          color: isBright ? '#000000 !important' : '#ffffff !important',
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -273,8 +293,8 @@ export default function MainLayout({
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: 'rgba(255, 255, 255, 0.2) !important',
-                  color: '#ffffff !important',
+                  background: isBright ? 'rgba(0, 0, 0, 0.1) !important' : 'rgba(255, 255, 255, 0.2) !important',
+                  color: isBright ? '#000000 !important' : '#ffffff !important',
                 }}
               >
                 <Sparkles size={18} fill="currentColor" />
@@ -287,8 +307,8 @@ export default function MainLayout({
                 sx={{ 
                   fontWeight: 800,
                   background: 'none !important',
-                  WebkitTextFillColor: '#ffffff !important',
-                  color: '#ffffff !important',
+                  WebkitTextFillColor: isBright ? '#000000 !important' : '#ffffff !important',
+                  color: isBright ? '#000000 !important' : '#ffffff !important',
                 }}
               >
                 {t('app.title')}
@@ -308,16 +328,16 @@ export default function MainLayout({
                 borderRadius: 'var(--radius-md)',
                 px: 2,
                 py: 0.75,
-                borderColor: 'rgba(255, 255, 255, 0.4) !important',
-                color: '#ffffff !important',
-                background: 'rgba(255, 255, 255, 0.1) !important',
+                borderColor: isBright ? 'rgba(0, 0, 0, 0.25) !important' : 'rgba(255, 255, 255, 0.4) !important',
+                color: isBright ? '#000000 !important' : '#ffffff !important',
+                background: isBright ? 'rgba(0, 0, 0, 0.05) !important' : 'rgba(255, 255, 255, 0.1) !important',
                 textTransform: 'none',
                 fontFamily: 'var(--font-body), sans-serif',
                 fontSize: '0.85rem',
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: '#ffffff !important',
-                  background: 'rgba(255, 255, 255, 0.2) !important',
+                  borderColor: isBright ? '#000000 !important' : '#ffffff !important',
+                  background: isBright ? 'rgba(0, 0, 0, 0.1) !important' : 'rgba(255, 255, 255, 0.2) !important',
                 }
               }}
             >
@@ -336,14 +356,14 @@ export default function MainLayout({
                 width: 38,
                 height: 38,
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid rgba(255, 255, 255, 0.3) !important',
-                background: 'rgba(255, 255, 255, 0.1) !important',
-                color: '#ffffff !important',
+                border: isBright ? '1px solid rgba(0, 0, 0, 0.2) !important' : '1px solid rgba(255, 255, 255, 0.3) !important',
+                background: isBright ? 'rgba(0, 0, 0, 0.05) !important' : 'rgba(255, 255, 255, 0.1) !important',
+                color: isBright ? '#000000 !important' : '#ffffff !important',
                 cursor: 'pointer',
                 transition: 'all var(--transition-fast)',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.2) !important',
-                  color: '#ffffff !important',
+                  background: isBright ? 'rgba(0, 0, 0, 0.1) !important' : 'rgba(255, 255, 255, 0.2) !important',
+                  color: isBright ? '#000000 !important' : '#ffffff !important',
                   transform: 'rotate(15deg)',
                 }
               }}
@@ -363,14 +383,14 @@ export default function MainLayout({
                 width: 38,
                 height: 38,
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid rgba(255, 255, 255, 0.3) !important',
-                background: 'rgba(255, 255, 255, 0.1) !important',
-                color: '#ffffff !important',
+                border: isBright ? '1px solid rgba(0, 0, 0, 0.2) !important' : '1px solid rgba(255, 255, 255, 0.3) !important',
+                background: isBright ? 'rgba(0, 0, 0, 0.05) !important' : 'rgba(255, 255, 255, 0.1) !important',
+                color: isBright ? '#000000 !important' : '#ffffff !important',
                 cursor: 'pointer',
                 transition: 'all var(--transition-fast)',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.2) !important',
-                  color: '#ffffff !important',
+                  background: isBright ? 'rgba(0, 0, 0, 0.1) !important' : 'rgba(255, 255, 255, 0.2) !important',
+                  color: isBright ? '#000000 !important' : '#ffffff !important',
                   transform: 'scale(1.05)',
                 }
               }}
@@ -389,10 +409,10 @@ export default function MainLayout({
                   aria-expanded={isMenuOpen ? 'true' : undefined}
                   sx={{ 
                     p: 0.5,
-                    border: '2px solid rgba(255, 255, 255, 0.4) !important',
+                    border: isBright ? '2px solid rgba(0, 0, 0, 0.25) !important' : '2px solid rgba(255, 255, 255, 0.4) !important',
                     transition: 'all var(--transition-fast)',
                     '&:hover': {
-                      borderColor: '#ffffff !important',
+                      borderColor: isBright ? '#000000 !important' : '#ffffff !important',
                       transform: 'scale(1.05)'
                     }
                   }}
@@ -714,21 +734,31 @@ export default function MainLayout({
         </Toolbar>
       </AppBar>
 
-      <Drawer variant="permanent" open={open}>
+      <Drawer 
+        variant="permanent" 
+        open={open}
+        sx={{
+          '& .MuiDrawer-paper': {
+            borderRight: isBright 
+              ? '1px solid rgba(0, 0, 0, 0.12) !important' 
+              : '1px solid rgba(255, 255, 255, 0.15) !important',
+          }
+        }}
+      >
         <DrawerHeader>
           <IconButton 
             onClick={handleDrawerClose} 
             sx={{ 
-              color: '#ffffff !important',
+              color: isBright ? '#000000 !important' : '#ffffff !important',
               '&:hover': {
-                background: 'rgba(255, 255, 255, 0.1) !important',
+                background: isBright ? 'rgba(0, 0, 0, 0.08) !important' : 'rgba(255, 255, 255, 0.1) !important',
               }
             }}
           >
             {muiTheme.direction === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </IconButton>
         </DrawerHeader>
-        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.15) !important' }} />
+        <Divider sx={{ borderColor: isBright ? 'rgba(0, 0, 0, 0.12) !important' : 'rgba(255, 255, 255, 0.15) !important' }} />
         
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
           <List>
@@ -746,15 +776,25 @@ export default function MainLayout({
                         mx: 1,
                         my: 0.5,
                         transition: 'all var(--transition-fast)',
-                        color: isActive ? '#ffffff !important' : 'rgba(255, 255, 255, 0.7) !important',
-                        background: isActive ? 'rgba(255, 255, 255, 0.18) !important' : 'transparent !important',
-                        borderLeft: isActive && muiTheme.direction !== 'rtl' ? '3px solid #ffffff !important' : 'none',
-                        borderRight: isActive && muiTheme.direction === 'rtl' ? '3px solid #ffffff !important' : 'none',
+                        color: isActive 
+                          ? (isBright ? '#000000 !important' : '#ffffff !important') 
+                          : (isBright ? 'rgba(0, 0, 0, 0.65) !important' : 'rgba(255, 255, 255, 0.7) !important'),
+                        background: isActive 
+                          ? (isBright ? 'rgba(0, 0, 0, 0.12) !important' : 'rgba(255, 255, 255, 0.18) !important') 
+                          : 'transparent !important',
+                        borderLeft: isActive && muiTheme.direction !== 'rtl' 
+                          ? (isBright ? '3px solid #000000 !important' : '3px solid #ffffff !important') 
+                          : 'none',
+                        borderRight: isActive && muiTheme.direction === 'rtl' 
+                          ? (isBright ? '3px solid #000000 !important' : '3px solid #ffffff !important') 
+                          : 'none',
                         '&:hover': {
-                          background: isActive ? 'rgba(255, 255, 255, 0.25) !important' : 'rgba(255, 255, 255, 0.1) !important',
-                          color: '#ffffff !important',
+                          background: isActive 
+                            ? (isBright ? 'rgba(0, 0, 0, 0.18) !important' : 'rgba(255, 255, 255, 0.25) !important') 
+                            : (isBright ? 'rgba(0, 0, 0, 0.08) !important' : 'rgba(255, 255, 255, 0.1) !important'),
+                          color: isBright ? '#000000 !important' : '#ffffff !important',
                           '& .MuiListItemIcon-root': {
-                            color: '#ffffff !important',
+                            color: isBright ? '#000000 !important' : '#ffffff !important',
                             transform: 'scale(1.08)',
                           }
                         }
@@ -774,7 +814,9 @@ export default function MainLayout({
                         {
                           minWidth: 0,
                           justifyContent: 'center',
-                          color: isActive ? '#ffffff !important' : 'rgba(255, 255, 255, 0.6) !important',
+                          color: isActive 
+                            ? (isBright ? '#000000 !important' : '#ffffff !important') 
+                            : (isBright ? 'rgba(0, 0, 0, 0.54) !important' : 'rgba(255, 255, 255, 0.6) !important'),
                           transition: 'all var(--transition-fast)',
                         },
                         open
@@ -815,7 +857,7 @@ export default function MainLayout({
           {/* Log Out button at the bottom of the sidebar drawer, shown if user is authenticated */}
           {isAuthenticated && (
             <List>
-              <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.15) !important', mb: 1 }} />
+              <Divider sx={{ borderColor: isBright ? 'rgba(0, 0, 0, 0.12) !important' : 'rgba(255, 255, 255, 0.15) !important', mb: 1 }} />
               <ListItem disablePadding sx={{ display: 'block' }}>
                 <ListItemButton
                   onClick={handleLogout}
@@ -827,12 +869,12 @@ export default function MainLayout({
                       mx: 1,
                       my: 0.5,
                       transition: 'all var(--transition-fast)',
-                      color: '#ff8888 !important',
+                      color: isBright ? '#b91c1c !important' : '#ff8888 !important',
                       '&:hover': {
-                        background: 'rgba(255, 255, 255, 0.1) !important',
-                        color: '#ffaaaa !important',
+                        background: isBright ? 'rgba(0, 0, 0, 0.06) !important' : 'rgba(255, 255, 255, 0.1) !important',
+                        color: isBright ? '#991b1b !important' : '#ffaaaa !important',
                         '& .MuiListItemIcon-root': {
-                          color: '#ffaaaa !important',
+                          color: isBright ? '#991b1b !important' : '#ffaaaa !important',
                           transform: 'scale(1.08)',
                         }
                       }
@@ -852,7 +894,7 @@ export default function MainLayout({
                       {
                         minWidth: 0,
                         justifyContent: 'center',
-                        color: '#ff8888 !important',
+                        color: isBright ? '#b91c1c !important' : '#ff8888 !important',
                         transition: 'all var(--transition-fast)',
                       },
                       open
