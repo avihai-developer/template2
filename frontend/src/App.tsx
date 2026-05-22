@@ -15,6 +15,8 @@ import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Users from './pages/Users';
+import ProtectedRoute from './components/common/ProtectedRoute';
 import { createAppTheme } from './theme';
 import { AuthProvider } from './context/AuthContext';
 
@@ -73,6 +75,11 @@ export default function App() {
               <Route index element={<Home />} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
+              <Route path="users" element={
+                <ProtectedRoute>
+                  <Users />
+                </ProtectedRoute>
+              } />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

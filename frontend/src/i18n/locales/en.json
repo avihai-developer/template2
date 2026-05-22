@@ -15,7 +15,8 @@
   "menu": {
     "home": "Home",
     "login": "Login",
-    "register": "Register"
+    "register": "Register",
+    "users": "Users"
   },
   "login": {
     "title": "Welcome Back",
@@ -36,6 +37,22 @@
     "submit": "Create Account",
     "hasAccount": "Already have an account?",
     "loginLink": "Log in here"
+  },
+  "users": {
+    "title": "User Directory",
+    "subtitle": "View and manage registered accounts across the platform",
+    "total": "Total Users",
+    "table": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "role": "Role",
+      "status": "Status",
+      "created": "Joined Date",
+      "actions": "Actions"
+    },
+    "loading": "Loading users...",
+    "error": "Failed to load users",
+    "noUsers": "No users found"
   }
 }
 

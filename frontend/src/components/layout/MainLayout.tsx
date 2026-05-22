@@ -34,7 +34,8 @@ import {
   LogIn,
   UserPlus,
   LogOut,
-  User
+  User,
+  Users
 } from 'lucide-react';
 
 const drawerWidth = 240;
@@ -180,7 +181,9 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
     ...(!isAuthenticated ? [
       { key: 'login', label: t('menu.login'), path: '/login', icon: <LogIn size={20} /> },
       { key: 'register', label: t('menu.register'), path: '/register', icon: <UserPlus size={20} /> },
-    ] : [])
+    ] : [
+      { key: 'users', label: t('menu.users', 'Users'), path: '/users', icon: <Users size={20} /> },
+    ])
   ];
 
   // Helper to extract initials for user avatar
