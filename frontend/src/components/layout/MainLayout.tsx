@@ -19,6 +19,9 @@ import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import MenuMui from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -35,7 +38,8 @@ import {
   UserPlus,
   LogOut,
   User,
-  Users
+  Users,
+  Palette
 } from 'lucide-react';
 
 const drawerWidth = 240;
@@ -136,12 +140,33 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
+const colorPresets = [
+  { name: 'Purple (Default)', hue: 258, color: 'hsl(258, 85%, 58%)' },
+  { name: 'Indigo Blue', hue: 225, color: 'hsl(225, 85%, 58%)' },
+  { name: 'Ocean Teal', hue: 195, color: 'hsl(195, 85%, 58%)' },
+  { name: 'Emerald Green', hue: 142, color: 'hsl(142, 85%, 58%)' },
+  { name: 'Amber Gold', hue: 45, color: 'hsl(45, 85%, 58%)' },
+  { name: 'Sunset Orange', hue: 24, color: 'hsl(24, 85%, 58%)' },
+  { name: 'Rose Pink', hue: 330, color: 'hsl(330, 85%, 58%)' },
+];
+
 interface MainLayoutProps {
   theme: 'light' | 'dark';
   setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
+  primaryHue: number;
+  setPrimaryHue: React.Dispatch<React.SetStateAction<number>>;
+  secondaryHue: number;
+  setSecondaryHue: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
+export default function MainLayout({ 
+  theme, 
+  setTheme,
+  primaryHue,
+  setPrimaryHue,
+  secondaryHue,
+  setSecondaryHue
+}: MainLayoutProps) {
   const { t, i18n } = useTranslation();
   const muiTheme = useTheme();
   const [open, setOpen] = React.useState(false);
@@ -159,6 +184,18 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  // Palette customizer menu state
+  const [paletteAnchorEl, setPaletteAnchorEl] = React.useState<null | HTMLElement>(null);
+  const isPaletteMenuOpen = Boolean(paletteAnchorEl);
+
+  const handlePaletteMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setPaletteAnchorEl(event.currentTarget);
+  };
+
+  const handlePaletteMenuClose = () => {
+    setPaletteAnchorEl(null);
   };
 
   const handleLogout = () => {
@@ -286,6 +323,33 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </IconButton>
 
+            {/* Dynamic Palette Customizer Button */}
+            <IconButton 
+              onClick={handlePaletteMenuOpen}
+              title={t('app.customizeTheme', 'Customize Theme Colors')}
+              aria-label={t('app.customizeTheme', 'Customize Theme Colors')}
+              aria-controls={isPaletteMenuOpen ? 'palette-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={isPaletteMenuOpen ? 'true' : undefined}
+              sx={{
+                width: 38,
+                height: 38,
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)',
+                '&:hover': {
+                  background: 'var(--surface-hover)',
+                  color: 'var(--primary)',
+                  transform: 'scale(1.05)',
+                }
+              }}
+            >
+              <Palette size={18} />
+            </IconButton>
+
             {/* Premium User Avatar & Profile Dropdown (Only shown if logged in) */}
             {isAuthenticated && user && (
               <>
@@ -405,6 +469,223 @@ export default function MainLayout({ theme, setTheme }: MainLayoutProps) {
                 </MenuMui>
               </>
             )}
+
+            {/* Dynamic Palette Customizer Dropdown Menu */}
+            <MenuMui
+              anchorEl={paletteAnchorEl}
+              id="palette-menu"
+              open={isPaletteMenuOpen}
+              onClose={handlePaletteMenuClose}
+              disableScrollLock
+              slotProps={{
+                paper: {
+                  elevation: 0,
+                  sx: {
+                    overflow: 'visible',
+                    filter: 'drop-shadow(0px 8px 24px rgba(0,0,0,0.15))',
+                    mt: 1.5,
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface)',
+                    backdropFilter: 'blur(20px)',
+                    color: 'var(--text-primary)',
+                    width: '260px',
+                    p: 2.5,
+                    '&::before': {
+                      content: '""',
+                      display: 'block',
+                      position: 'absolute',
+                      top: 0,
+                      right: muiTheme.direction === 'rtl' ? 'auto' : 50,
+                      left: muiTheme.direction === 'rtl' ? 50 : 'auto',
+                      width: 10,
+                      height: 10,
+                      bgcolor: 'var(--surface)',
+                      transform: 'translateY(-50%) rotate(45deg)',
+                      zIndex: 0,
+                      borderLeft: '1px solid var(--border)',
+                      borderTop: '1px solid var(--border)',
+                    },
+                  },
+                }
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  fontWeight: 800, 
+                  color: 'var(--text-primary)',
+                  mb: 1.5,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontSize: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                <Palette size={14} style={{ color: 'var(--primary)' }} />
+                {t('theme.customizer', 'Theme Customizer')}
+              </Typography>
+              
+              <Divider sx={{ borderColor: 'var(--border)', mb: 2 }} />
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {/* Primary Color Selector */}
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="primary-color-label" sx={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                    {t('theme.primaryColor', 'Primary Color')}
+                  </InputLabel>
+                  <Select
+                    labelId="primary-color-label"
+                    id="primary-color-select"
+                    value={primaryHue}
+                    label={t('theme.primaryColor', 'Primary Color')}
+                    onChange={(e) => setPrimaryHue(Number(e.target.value))}
+                    sx={{
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--text-primary)',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      '.MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'var(--border)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'var(--border-hover)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'var(--primary)',
+                      },
+                      fontSize: '0.9rem',
+                    }}
+                    MenuProps={{
+                      disableScrollLock: true,
+                      slotProps: {
+                        paper: {
+                          sx: {
+                            background: 'var(--surface)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid var(--border)',
+                            color: 'var(--text-primary)',
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    {colorPresets.map((preset) => (
+                      <MenuItem 
+                        key={`primary-${preset.hue}`} 
+                        value={preset.hue}
+                        sx={{
+                          fontSize: '0.9rem',
+                          py: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.5,
+                          color: 'var(--text-primary)',
+                          '&:hover': {
+                            background: 'var(--surface-hover)',
+                          },
+                          '&.Mui-selected': {
+                            background: 'var(--primary-glow)',
+                            color: 'var(--primary)',
+                            fontWeight: 600,
+                          }
+                        }}
+                      >
+                        <Box 
+                          sx={{ 
+                            width: 12, 
+                            height: 12, 
+                            borderRadius: '50%', 
+                            background: preset.color,
+                            flexShrink: 0
+                          }} 
+                        />
+                        {preset.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* Secondary Color Selector */}
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="secondary-color-label" sx={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                    {t('theme.secondaryColor', 'Secondary Color')}
+                  </InputLabel>
+                  <Select
+                    labelId="secondary-color-label"
+                    id="secondary-color-select"
+                    value={secondaryHue}
+                    label={t('theme.secondaryColor', 'Secondary Color')}
+                    onChange={(e) => setSecondaryHue(Number(e.target.value))}
+                    sx={{
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--text-primary)',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      '.MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'var(--border)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'var(--border-hover)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'var(--primary)',
+                      },
+                      fontSize: '0.9rem',
+                    }}
+                    MenuProps={{
+                      disableScrollLock: true,
+                      slotProps: {
+                        paper: {
+                          sx: {
+                            background: 'var(--surface)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid var(--border)',
+                            color: 'var(--text-primary)',
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    {colorPresets.map((preset) => (
+                      <MenuItem 
+                        key={`secondary-${preset.hue}`} 
+                        value={preset.hue}
+                        sx={{
+                          fontSize: '0.9rem',
+                          py: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.5,
+                          color: 'var(--text-primary)',
+                          '&:hover': {
+                            background: 'var(--surface-hover)',
+                          },
+                          '&.Mui-selected': {
+                            background: 'var(--primary-glow)',
+                            color: 'var(--primary)',
+                            fontWeight: 600,
+                          }
+                        }}
+                      >
+                        <Box 
+                          sx={{ 
+                            width: 12, 
+                            height: 12, 
+                            borderRadius: '50%', 
+                            background: preset.color,
+                            flexShrink: 0
+                          }} 
+                        />
+                        {preset.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </MenuMui>
           </Box>
         </Toolbar>
       </AppBar>

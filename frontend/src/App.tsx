@@ -35,7 +35,12 @@ export default function App() {
 
   // Core Theme States
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-  const [hue] = useState<number>(258); // elegant default purple hue
+  const [primaryHue, setPrimaryHue] = useState<number>(() => {
+    return Number(localStorage.getItem('primaryHue') || '258');
+  });
+  const [secondaryHue, setSecondaryHue] = useState<number>(() => {
+    return Number(localStorage.getItem('secondaryHue') || '195');
+  });
 
   // Syncing Language & Layout Direction Changes
   useEffect(() => {
@@ -48,20 +53,27 @@ export default function App() {
   const muiTheme = useMemo(() => {
     return createAppTheme({
       themeMode: theme,
-      hue,
+      primaryHue,
+      secondaryHue,
       direction: i18n.language === 'he' ? 'rtl' : 'ltr',
     });
-  }, [theme, hue, i18n.language]);
+  }, [theme, primaryHue, secondaryHue, i18n.language]);
 
   // Syncing Theme Changes
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Syncing Dynamic Hue Customizer (CSS Variable)
+  // Syncing Dynamic Hue Customizers (CSS Variables & Storage)
   useEffect(() => {
-    document.documentElement.style.setProperty('--hue-primary', hue.toString());
-  }, [hue]);
+    document.documentElement.style.setProperty('--hue-primary', primaryHue.toString());
+    localStorage.setItem('primaryHue', primaryHue.toString());
+  }, [primaryHue]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--hue-secondary', secondaryHue.toString());
+    localStorage.setItem('secondaryHue', secondaryHue.toString());
+  }, [secondaryHue]);
 
   const currentCache = i18n.language === 'he' ? cacheRtl : cacheLtr;
 
@@ -71,7 +83,16 @@ export default function App() {
         <ThemeProvider theme={muiTheme}>
           <CssBaseline />
           <Routes>
-            <Route path="/" element={<MainLayout theme={theme} setTheme={setTheme} />}>
+            <Route path="/" element={
+              <MainLayout 
+                theme={theme} 
+                setTheme={setTheme} 
+                primaryHue={primaryHue}
+                setPrimaryHue={setPrimaryHue}
+                secondaryHue={secondaryHue}
+                setSecondaryHue={setSecondaryHue}
+              />
+            }>
               <Route index element={<Home />} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
