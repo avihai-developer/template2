@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Box, 
@@ -7,18 +8,70 @@ import {
   Button,
   TextField,
   Link,
-  Stack
+  Stack,
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import { UserPlus } from 'lucide-react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const { t } = useTranslation();
+  const { register, isAuthenticated, error, clearError } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  // Local state
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Clear global auth errors on mount/unmount
+  useEffect(() => {
+    clearError();
+    return () => clearError();
+  }, []);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Placeholder register action
-    console.log('Register submitted');
+    setLocalError(null);
+    clearError();
+
+    // Client-side validations
+    if (!fullName || !email || !password || !confirmPassword) {
+      setLocalError(t('Please fill in all fields'));
+      return;
+    }
+
+    if (password.length < 6) {
+      setLocalError(t('Password must be at least 6 characters long'));
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setLocalError(t('Passwords do not match'));
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await register(fullName, email, password);
+      // Success redirect is handled by useEffect watching isAuthenticated
+    } catch (err: any) {
+      setLocalError(err.message || t('registration.failed'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -92,6 +145,30 @@ export default function Register() {
             </Box>
           </Stack>
 
+          {/* Error Message Alert */}
+          {(localError || error) && (
+            <Alert 
+              severity="error" 
+              variant="outlined"
+              onClose={() => {
+                setLocalError(null);
+                clearError();
+              }}
+              sx={{ 
+                mb: 3, 
+                borderRadius: 'var(--radius-md)',
+                color: '#ef4444',
+                borderColor: 'rgba(239, 68, 68, 0.4)',
+                backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                '& .MuiAlert-icon': {
+                  color: '#ef4444'
+                }
+              }}
+            >
+              {localError || error}
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit}>
             <Stack spacing={2.5}>
               <TextField
@@ -100,6 +177,12 @@ export default function Register() {
                 type="text"
                 variant="outlined"
                 required
+                disabled={isSubmitting}
+                value={fullName}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-md)',
@@ -133,6 +216,12 @@ export default function Register() {
                 type="email"
                 variant="outlined"
                 required
+                disabled={isSubmitting}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-md)',
@@ -166,6 +255,12 @@ export default function Register() {
                 type="password"
                 variant="outlined"
                 required
+                disabled={isSubmitting}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-md)',
@@ -199,6 +294,12 @@ export default function Register() {
                 type="password"
                 variant="outlined"
                 required
+                disabled={isSubmitting}
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-md)',
@@ -232,15 +333,24 @@ export default function Register() {
                 variant="contained"
                 color="primary"
                 size="large"
+                disabled={isSubmitting}
                 sx={{
                   py: 1.5,
                   borderRadius: 'var(--radius-md)',
                   boxShadow: '0 4px 15px var(--primary-glow)',
                   fontWeight: 700,
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1.5
                 }}
               >
-                {t('register.submit')}
+                {isSubmitting ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  t('register.submit')
+                )}
               </Button>
             </Stack>
           </form>

@@ -1,6 +1,7 @@
 import { ObjectId, UpdateResult, DeleteResult, BulkWriteResult } from 'mongodb';
 import { getDB } from '../config/db.js';
 import { IUser, IUserCreate, IUserUpdate } from '../types/user.types.js';
+import { hashPassword } from '../utils/auth.utils.js';
 
 const COLLECTION_NAME = 'users';
 
@@ -11,8 +12,10 @@ export class UserService {
 
   // 1. Create One
   static async createOne(data: IUserCreate): Promise<IUser> {
+    const hashedPassword = data.password ? await hashPassword(data.password) : undefined;
     const doc: IUser = {
       ...data,
+      ...(hashedPassword ? { password: hashedPassword } : {}),
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -22,10 +25,14 @@ export class UserService {
 
   // 2. Create Many
   static async createMany(dataArray: IUserCreate[]): Promise<{ insertedCount: number; insertedIds: Record<number, ObjectId> }> {
-    const docs = dataArray.map(data => ({
-      ...data,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    const docs = await Promise.all(dataArray.map(async data => {
+      const hashedPassword = data.password ? await hashPassword(data.password) : undefined;
+      return {
+        ...data,
+        ...(hashedPassword ? { password: hashedPassword } : {}),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
     }));
     const result = await this.getCollection().insertMany(docs as any);
     return {
@@ -48,10 +55,13 @@ export class UserService {
   // 5. Update One
   static async updateOne(id: string, updateData: IUserUpdate): Promise<UpdateResult | null> {
     if (!ObjectId.isValid(id)) return null;
-    const updatePayload = {
+    const updatePayload: any = {
       ...updateData,
       updatedAt: new Date()
     };
+    if (updateData.password) {
+      updatePayload.password = await hashPassword(updateData.password);
+    }
     return await this.getCollection().updateOne(
       { _id: new ObjectId(id) } as any,
       { $set: updatePayload }
@@ -60,10 +70,13 @@ export class UserService {
 
   // 6. Update Many (Same Value)
   static async updateManySameValue(query: Record<string, any>, updateData: IUserUpdate): Promise<UpdateResult> {
-    const updatePayload = {
+    const updatePayload: any = {
       ...updateData,
       updatedAt: new Date()
     };
+    if (updateData.password) {
+      updatePayload.password = await hashPassword(updateData.password);
+    }
     return await this.getCollection().updateMany(query, { $set: updatePayload });
   }
 
@@ -71,20 +84,23 @@ export class UserService {
   static async updateManyDifferentValues(
     updates: { id: string; data: IUserUpdate }[]
   ): Promise<BulkWriteResult> {
-    const bulkOps = updates
+    const bulkOps = await Promise.all(updates
       .filter(item => ObjectId.isValid(item.id))
-      .map(item => {
-        const updatePayload = {
+      .map(async item => {
+        const updatePayload: any = {
           ...item.data,
           updatedAt: new Date()
         };
+        if (item.data.password) {
+          updatePayload.password = await hashPassword(item.data.password);
+        }
         return {
           updateOne: {
             filter: { _id: new ObjectId(item.id) },
             update: { $set: updatePayload }
           }
         };
-      });
+      }));
 
     if (bulkOps.length === 0) {
       throw new Error('No valid IDs provided for bulk update');

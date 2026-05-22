@@ -16,6 +16,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { createAppTheme } from './theme';
+import { AuthProvider } from './context/AuthContext';
 
 // Create Emotion caches for LTR and RTL layouts
 const cacheRtl = createCache({
@@ -63,18 +64,20 @@ export default function App() {
   const currentCache = i18n.language === 'he' ? cacheRtl : cacheLtr;
 
   return (
-    <CacheProvider value={currentCache}>
-      <ThemeProvider theme={muiTheme}>
-        <CssBaseline />
-        <Routes>
-          <Route path="/" element={<MainLayout theme={theme} setTheme={setTheme} />}>
-            <Route index element={<Home />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </ThemeProvider>
-    </CacheProvider>
+    <AuthProvider>
+      <CacheProvider value={currentCache}>
+        <ThemeProvider theme={muiTheme}>
+          <CssBaseline />
+          <Routes>
+            <Route path="/" element={<MainLayout theme={theme} setTheme={setTheme} />}>
+              <Route index element={<Home />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </ThemeProvider>
+      </CacheProvider>
+    </AuthProvider>
   );
 }

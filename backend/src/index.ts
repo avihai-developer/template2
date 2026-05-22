@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import userRoutes from './routes/user.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -38,7 +39,8 @@ app.get('/api', (req: Request, res: Response) => {
   });
 });
 
-// Mount user routes
+// Mount auth and user routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 // Fallback for 404 (Not Found) routes

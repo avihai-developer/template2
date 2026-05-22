@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Box, 
@@ -7,18 +8,59 @@ import {
   Button,
   TextField,
   Link,
-  Stack
+  Stack,
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import { LogIn } from 'lucide-react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const { t } = useTranslation();
+  const { login, isAuthenticated, error, clearError } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  // Local state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Clear global auth errors when mounting/unmounting
+  useEffect(() => {
+    clearError();
+    return () => clearError();
+  }, []);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Placeholder login action
-    console.log('Login submitted');
+    setLocalError(null);
+    clearError();
+
+    if (!email || !password) {
+      setLocalError(t('Please fill in all fields'));
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await login(email, password);
+      // Success redirect is handled by the useEffect watching isAuthenticated
+    } catch (err: any) {
+      // Error is stored globally in useAuth() and displayed,
+      // but we can also log or set it locally if needed.
+      setLocalError(err.message || t('login.failed'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -92,6 +134,30 @@ export default function Login() {
             </Box>
           </Stack>
 
+          {/* Error Message Alert */}
+          {(localError || error) && (
+            <Alert 
+              severity="error" 
+              variant="outlined"
+              onClose={() => {
+                setLocalError(null);
+                clearError();
+              }}
+              sx={{ 
+                mb: 3, 
+                borderRadius: 'var(--radius-md)',
+                color: '#ef4444',
+                borderColor: 'rgba(239, 68, 68, 0.4)',
+                backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                '& .MuiAlert-icon': {
+                  color: '#ef4444'
+                }
+              }}
+            >
+              {localError || error}
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit}>
             <Stack spacing={2.5}>
               <TextField
@@ -100,6 +166,12 @@ export default function Login() {
                 type="email"
                 variant="outlined"
                 required
+                disabled={isSubmitting}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-md)',
@@ -133,6 +205,12 @@ export default function Login() {
                 type="password"
                 variant="outlined"
                 required
+                disabled={isSubmitting}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-md)',
@@ -166,15 +244,24 @@ export default function Login() {
                 variant="contained"
                 color="primary"
                 size="large"
+                disabled={isSubmitting}
                 sx={{
                   py: 1.5,
                   borderRadius: 'var(--radius-md)',
                   boxShadow: '0 4px 15px var(--primary-glow)',
                   fontWeight: 700,
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1.5
                 }}
               >
-                {t('login.submit')}
+                {isSubmitting ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  t('login.submit')
+                )}
               </Button>
             </Stack>
           </form>
