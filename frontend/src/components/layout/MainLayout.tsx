@@ -51,10 +51,9 @@ const openedMixin = (theme: Theme): CSSObject => ({
     duration: theme.transitions.duration.enteringScreen,
   }),
   overflowX: 'hidden',
-  background: 'var(--surface)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  borderRight: '1px solid var(--border)',
+  background: 'var(--primary) !important',
+  backgroundImage: 'none !important',
+  borderRight: '1px solid rgba(255, 255, 255, 0.15) !important',
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
@@ -67,10 +66,9 @@ const closedMixin = (theme: Theme): CSSObject => ({
   [theme.breakpoints.up('sm')]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
   },
-  background: 'var(--surface)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  borderRight: '1px solid var(--border)',
+  background: 'var(--primary) !important',
+  backgroundImage: 'none !important',
+  borderRight: '1px solid rgba(255, 255, 255, 0.15) !important',
 });
 
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -95,8 +93,7 @@ const AppBar = styled(MuiAppBar, {
     duration: theme.transitions.duration.leavingScreen,
   }),
   background: 'var(--surface) !important',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
+  backgroundImage: 'none !important',
   borderBottom: '1px solid var(--border)',
   boxShadow: 'var(--glass-shadow)',
   color: 'var(--text-primary)',
@@ -239,7 +236,19 @@ export default function MainLayout({
 
       <CssBaseline />
 
-      <AppBar position="fixed" open={open}>
+      <AppBar 
+        position="fixed" 
+        open={open}
+        sx={{
+          background: 'var(--primary) !important',
+          backgroundColor: 'var(--primary) !important',
+          backgroundImage: 'none !important',
+          backdropFilter: 'none !important',
+          WebkitBackdropFilter: 'none !important',
+          opacity: '1 !important',
+          color: '#ffffff !important',
+        }}
+      >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
@@ -258,10 +267,30 @@ export default function MainLayout({
             </IconButton>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box className="logo-icon" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box 
+                className="logo-icon" 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  background: 'rgba(255, 255, 255, 0.2) !important',
+                  color: '#ffffff !important',
+                }}
+              >
                 <Sparkles size={18} fill="currentColor" />
               </Box>
-              <Typography variant="h6" className="logo-text" noWrap component="div" sx={{ fontWeight: 800 }}>
+              <Typography 
+                variant="h6" 
+                className="logo-text" 
+                noWrap 
+                component="div" 
+                sx={{ 
+                  fontWeight: 800,
+                  background: 'none !important',
+                  WebkitTextFillColor: '#ffffff !important',
+                  color: '#ffffff !important',
+                }}
+              >
                 {t('app.title')}
               </Typography>
             </Box>
@@ -279,17 +308,16 @@ export default function MainLayout({
                 borderRadius: 'var(--radius-md)',
                 px: 2,
                 py: 0.75,
-                borderColor: 'var(--border)',
-                color: 'var(--text-primary)',
-                backdropFilter: 'blur(10px)',
-                background: 'var(--surface)',
+                borderColor: 'rgba(255, 255, 255, 0.4) !important',
+                color: '#ffffff !important',
+                background: 'rgba(255, 255, 255, 0.1) !important',
                 textTransform: 'none',
                 fontFamily: 'var(--font-body), sans-serif',
                 fontSize: '0.85rem',
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: 'var(--border-hover)',
-                  background: 'var(--surface-hover)',
+                  borderColor: '#ffffff !important',
+                  background: 'rgba(255, 255, 255, 0.2) !important',
                 }
               }}
             >
@@ -308,14 +336,14 @@ export default function MainLayout({
                 width: 38,
                 height: 38,
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--text-secondary)',
+                border: '1px solid rgba(255, 255, 255, 0.3) !important',
+                background: 'rgba(255, 255, 255, 0.1) !important',
+                color: '#ffffff !important',
                 cursor: 'pointer',
                 transition: 'all var(--transition-fast)',
                 '&:hover': {
-                  background: 'var(--surface-hover)',
-                  color: 'var(--primary)',
+                  background: 'rgba(255, 255, 255, 0.2) !important',
+                  color: '#ffffff !important',
                   transform: 'rotate(15deg)',
                 }
               }}
@@ -335,14 +363,14 @@ export default function MainLayout({
                 width: 38,
                 height: 38,
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--text-secondary)',
+                border: '1px solid rgba(255, 255, 255, 0.3) !important',
+                background: 'rgba(255, 255, 255, 0.1) !important',
+                color: '#ffffff !important',
                 cursor: 'pointer',
                 transition: 'all var(--transition-fast)',
                 '&:hover': {
-                  background: 'var(--surface-hover)',
-                  color: 'var(--primary)',
+                  background: 'rgba(255, 255, 255, 0.2) !important',
+                  color: '#ffffff !important',
                   transform: 'scale(1.05)',
                 }
               }}
@@ -361,10 +389,10 @@ export default function MainLayout({
                   aria-expanded={isMenuOpen ? 'true' : undefined}
                   sx={{ 
                     p: 0.5,
-                    border: '2px solid var(--border)',
+                    border: '2px solid rgba(255, 255, 255, 0.4) !important',
                     transition: 'all var(--transition-fast)',
                     '&:hover': {
-                      borderColor: 'var(--primary)',
+                      borderColor: '#ffffff !important',
                       transform: 'scale(1.05)'
                     }
                   }}
@@ -400,7 +428,6 @@ export default function MainLayout({
                         borderRadius: 'var(--radius-md)',
                         border: '1px solid var(--border)',
                         background: 'var(--surface)',
-                        backdropFilter: 'blur(20px)',
                         color: 'var(--text-primary)',
                         width: '240px',
                         '&::before': {
@@ -487,7 +514,6 @@ export default function MainLayout({
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--border)',
                     background: 'var(--surface)',
-                    backdropFilter: 'blur(20px)',
                     color: 'var(--text-primary)',
                     width: '260px',
                     p: 2.5,
@@ -565,7 +591,6 @@ export default function MainLayout({
                         paper: {
                           sx: {
                             background: 'var(--surface)',
-                            backdropFilter: 'blur(20px)',
                             border: '1px solid var(--border)',
                             color: 'var(--text-primary)',
                           }
@@ -641,7 +666,6 @@ export default function MainLayout({
                         paper: {
                           sx: {
                             background: 'var(--surface)',
-                            backdropFilter: 'blur(20px)',
                             border: '1px solid var(--border)',
                             color: 'var(--text-primary)',
                           }
@@ -692,11 +716,19 @@ export default function MainLayout({
 
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose} sx={{ color: 'var(--text-secondary)' }}>
+          <IconButton 
+            onClick={handleDrawerClose} 
+            sx={{ 
+              color: '#ffffff !important',
+              '&:hover': {
+                background: 'rgba(255, 255, 255, 0.1) !important',
+              }
+            }}
+          >
             {muiTheme.direction === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </IconButton>
         </DrawerHeader>
-        <Divider sx={{ borderColor: 'var(--border)' }} />
+        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.15) !important' }} />
         
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
           <List>
@@ -714,15 +746,15 @@ export default function MainLayout({
                         mx: 1,
                         my: 0.5,
                         transition: 'all var(--transition-fast)',
-                        color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
-                        background: isActive ? 'var(--primary-glow)' : 'transparent',
-                        borderLeft: isActive && muiTheme.direction !== 'rtl' ? '3px solid var(--primary)' : 'none',
-                        borderRight: isActive && muiTheme.direction === 'rtl' ? '3px solid var(--primary)' : 'none',
+                        color: isActive ? '#ffffff !important' : 'rgba(255, 255, 255, 0.7) !important',
+                        background: isActive ? 'rgba(255, 255, 255, 0.18) !important' : 'transparent !important',
+                        borderLeft: isActive && muiTheme.direction !== 'rtl' ? '3px solid #ffffff !important' : 'none',
+                        borderRight: isActive && muiTheme.direction === 'rtl' ? '3px solid #ffffff !important' : 'none',
                         '&:hover': {
-                          background: isActive ? 'var(--primary-glow)' : 'var(--surface-hover)',
-                          color: 'var(--primary)',
+                          background: isActive ? 'rgba(255, 255, 255, 0.25) !important' : 'rgba(255, 255, 255, 0.1) !important',
+                          color: '#ffffff !important',
                           '& .MuiListItemIcon-root': {
-                            color: 'var(--primary)',
+                            color: '#ffffff !important',
                             transform: 'scale(1.08)',
                           }
                         }
@@ -742,7 +774,7 @@ export default function MainLayout({
                         {
                           minWidth: 0,
                           justifyContent: 'center',
-                          color: isActive ? 'var(--primary)' : 'var(--text-muted)',
+                          color: isActive ? '#ffffff !important' : 'rgba(255, 255, 255, 0.6) !important',
                           transition: 'all var(--transition-fast)',
                         },
                         open
@@ -766,6 +798,12 @@ export default function MainLayout({
                           : {
                               opacity: 0,
                             },
+                        {
+                          '& .MuiTypography-root': {
+                            fontWeight: isActive ? 700 : 500,
+                            fontFamily: 'var(--font-body), sans-serif',
+                          }
+                        }
                       ]}
                     />
                   </ListItemButton>
@@ -777,7 +815,7 @@ export default function MainLayout({
           {/* Log Out button at the bottom of the sidebar drawer, shown if user is authenticated */}
           {isAuthenticated && (
             <List>
-              <Divider sx={{ borderColor: 'var(--border)', mb: 1 }} />
+              <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.15) !important', mb: 1 }} />
               <ListItem disablePadding sx={{ display: 'block' }}>
                 <ListItemButton
                   onClick={handleLogout}
@@ -789,12 +827,12 @@ export default function MainLayout({
                       mx: 1,
                       my: 0.5,
                       transition: 'all var(--transition-fast)',
-                      color: '#ef4444',
+                      color: '#ff8888 !important',
                       '&:hover': {
-                        background: 'rgba(239, 68, 68, 0.08)',
-                        color: '#ef4444',
+                        background: 'rgba(255, 255, 255, 0.1) !important',
+                        color: '#ffaaaa !important',
                         '& .MuiListItemIcon-root': {
-                          color: '#ef4444',
+                          color: '#ffaaaa !important',
                           transform: 'scale(1.08)',
                         }
                       }
@@ -814,7 +852,7 @@ export default function MainLayout({
                       {
                         minWidth: 0,
                         justifyContent: 'center',
-                        color: '#ef4444',
+                        color: '#ff8888 !important',
                         transition: 'all var(--transition-fast)',
                       },
                       open
@@ -838,6 +876,12 @@ export default function MainLayout({
                         : {
                             opacity: 0,
                           },
+                      {
+                        '& .MuiTypography-root': {
+                          fontWeight: 600,
+                          fontFamily: 'var(--font-body), sans-serif',
+                        }
+                      }
                     ]}
                   />
                 </ListItemButton>

@@ -48,8 +48,8 @@
 [data-theme="dark"] {
   --bg-primary: hsl(var(--hue-primary), 28%, 6%);
   --bg-secondary: hsl(var(--hue-primary), 24%, 9%);
-  --surface: rgba(18, 15, 28, 0.45);
-  --surface-hover: rgba(26, 22, 40, 0.7);
+  --surface: hsl(var(--hue-primary), 22%, 11%);
+  --surface-hover: hsl(var(--hue-primary), 22%, 15%);
   --surface-solid: hsl(var(--hue-primary), 22%, 11%);
   
   --text-primary: hsl(var(--hue-primary), 25%, 95%);
@@ -162,8 +162,6 @@ body {
 /* Glassmorphism Styling */
 .glass {
   background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
   box-shadow: var(--glass-shadow);
   transition: background var(--transition-normal), border var(--transition-normal), box-shadow var(--transition-normal);

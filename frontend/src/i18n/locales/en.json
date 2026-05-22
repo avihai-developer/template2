@@ -42,6 +42,7 @@
     "title": "User Directory",
     "subtitle": "View and manage registered accounts across the platform",
     "total": "Total Users",
+    "selectColumns": "Select Columns",
     "table": {
       "name": "Full Name",
       "email": "Email Address",

@@ -19,7 +19,11 @@ import {
   Skeleton,
   IconButton,
   Grid,
-  Tooltip
+  Tooltip,
+  Menu,
+  MenuItem,
+  Checkbox,
+  ListItemText
 } from '@mui/material';
 import { 
   Users as UsersIcon, 
@@ -29,7 +33,8 @@ import {
   Shield, 
   ShieldAlert,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  SlidersHorizontal
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { User } from '../context/AuthContext';
@@ -46,6 +51,53 @@ export default function Users() {
   // Pagination State
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+
+  // Column Visibility State with local storage persistence
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    const saved = localStorage.getItem('users_visible_columns');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // use default
+      }
+    }
+    return {
+      name: true,
+      email: true,
+      role: true,
+      status: true,
+      created: true
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('users_visible_columns', JSON.stringify(visibleColumns));
+  }, [visibleColumns]);
+
+  // Menu anchor element state for the Column Selector dropdown
+  const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
+  const isColumnMenuOpen = Boolean(columnMenuAnchor);
+
+  const handleOpenColumnMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setColumnMenuAnchor(event.currentTarget);
+  };
+
+  const handleCloseColumnMenu = () => {
+    setColumnMenuAnchor(null);
+  };
+
+  const handleToggleColumn = (column: keyof typeof visibleColumns) => {
+    const activeCount = Object.values(visibleColumns).filter(Boolean).length;
+    if (activeCount === 1 && visibleColumns[column]) {
+      // Don't allow hiding the last remaining column
+      return;
+    }
+    setVisibleColumns((prev: any) => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
+  };
 
   // Fetch users from API
   const fetchUsers = async () => {
@@ -121,29 +173,133 @@ export default function Users() {
             {t('users.subtitle')}
           </Typography>
         </Box>
-        <Tooltip title={isRtl ? 'רענן רשימה' : 'Refresh List'}>
-          <IconButton 
-            onClick={fetchUsers} 
-            disabled={loading}
-            sx={{
-              width: 44,
-              height: 44,
+        
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+          {/* Columns Visibility Toggle Button */}
+          <Tooltip title={t('users.selectColumns')}>
+            <IconButton 
+              onClick={handleOpenColumnMenu}
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text-secondary)',
+                transition: 'all var(--transition-fast)',
+                '&:hover': {
+                  background: 'var(--surface-hover)',
+                  color: 'var(--primary)',
+                }
+              }}
+            >
+              <SlidersHorizontal size={20} />
+            </IconButton>
+          </Tooltip>
+
+          {/* Refresh List Button */}
+          <Tooltip title={isRtl ? 'רענן רשימה' : 'Refresh List'}>
+            <IconButton 
+              onClick={fetchUsers} 
+              disabled={loading}
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text-secondary)',
+                transition: 'all var(--transition-fast)',
+                '&:hover': {
+                  background: 'var(--surface-hover)',
+                  color: 'var(--primary)',
+                  transform: 'rotate(180deg)'
+                }
+              }}
+            >
+              <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+      </Box>
+
+      {/* Columns Select Dropdown Menu */}
+      <Menu
+        anchorEl={columnMenuAnchor}
+        open={isColumnMenuOpen}
+        onClose={handleCloseColumnMenu}
+        dir={isRtl ? 'rtl' : 'ltr'}
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 1,
+              minWidth: 200,
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border)',
               background: 'var(--surface)',
-              color: 'var(--text-secondary)',
-              transition: 'all var(--transition-fast)',
-              '&:hover': {
-                background: 'var(--surface-hover)',
-                color: 'var(--primary)',
-                transform: 'rotate(180deg)'
+              boxShadow: 'var(--glass-shadow)',
+              '& .MuiMenuItem-root': {
+                py: 1,
+                px: 2,
+                '&:hover': {
+                  background: 'var(--surface-hover)',
+                }
               }
-            }}
-          >
-            <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
-          </IconButton>
-        </Tooltip>
-      </Box>
+            }
+          }
+        }}
+        transformOrigin={{ horizontal: isRtl ? 'left' : 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: isRtl ? 'left' : 'right', vertical: 'bottom' }}
+      >
+        <Box sx={{ px: 2, py: 1, borderBottom: '1px solid var(--border)', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+            {t('users.selectColumns')}
+          </Typography>
+        </Box>
+        
+        {(Object.keys(visibleColumns) as Array<keyof typeof visibleColumns>).map((columnKey) => {
+          const isLastActive = Object.values(visibleColumns).filter(Boolean).length === 1 && visibleColumns[columnKey];
+          
+          return (
+            <MenuItem 
+              key={String(columnKey)} 
+              onClick={() => handleToggleColumn(columnKey)}
+              disabled={isLastActive}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5
+              }}
+            >
+              <Checkbox 
+                checked={visibleColumns[columnKey]}
+                disabled={isLastActive}
+                size="small"
+                sx={{
+                  color: 'var(--text-muted)',
+                  '&.Mui-checked': {
+                    color: 'var(--primary)',
+                  },
+                  p: 0
+                }}
+              />
+              <ListItemText 
+                primary={
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: visibleColumns[columnKey] ? 600 : 400,
+                      color: visibleColumns[columnKey] ? 'var(--text-primary)' : 'var(--text-muted)'
+                    }}
+                  >
+                    {t(`users.table.${String(columnKey)}`)}
+                  </Typography>
+                }
+              />
+            </MenuItem>
+          );
+        })}
+      </Menu>
 
       {/* Error State Banner */}
       {error && (
@@ -297,66 +453,76 @@ export default function Users() {
           <Table stickyHeader aria-label="users table">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ 
-                  background: 'var(--bg-secondary)', 
-                  color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  borderBottom: '1px solid var(--border)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontFamily: 'var(--font-heading)'
-                }}>
-                  {t('users.table.name')}
-                </TableCell>
-                <TableCell sx={{ 
-                  background: 'var(--bg-secondary)', 
-                  color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  borderBottom: '1px solid var(--border)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontFamily: 'var(--font-heading)'
-                }}>
-                  {t('users.table.email')}
-                </TableCell>
-                <TableCell sx={{ 
-                  background: 'var(--bg-secondary)', 
-                  color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  borderBottom: '1px solid var(--border)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontFamily: 'var(--font-heading)'
-                }}>
-                  {t('users.table.role')}
-                </TableCell>
-                <TableCell sx={{ 
-                  background: 'var(--bg-secondary)', 
-                  color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  borderBottom: '1px solid var(--border)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontFamily: 'var(--font-heading)'
-                }}>
-                  {t('users.table.status')}
-                </TableCell>
-                <TableCell sx={{ 
-                  background: 'var(--bg-secondary)', 
-                  color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  borderBottom: '1px solid var(--border)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontFamily: 'var(--font-heading)'
-                }}>
-                  {t('users.table.created')}
-                </TableCell>
+                {visibleColumns.name && (
+                  <TableCell sx={{ 
+                    background: 'var(--bg-secondary)', 
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    borderBottom: '1px solid var(--border)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontFamily: 'var(--font-heading)'
+                  }}>
+                    {t('users.table.name')}
+                  </TableCell>
+                )}
+                {visibleColumns.email && (
+                  <TableCell sx={{ 
+                    background: 'var(--bg-secondary)', 
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    borderBottom: '1px solid var(--border)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontFamily: 'var(--font-heading)'
+                  }}>
+                    {t('users.table.email')}
+                  </TableCell>
+                )}
+                {visibleColumns.role && (
+                  <TableCell sx={{ 
+                    background: 'var(--bg-secondary)', 
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    borderBottom: '1px solid var(--border)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontFamily: 'var(--font-heading)'
+                  }}>
+                    {t('users.table.role')}
+                  </TableCell>
+                )}
+                {visibleColumns.status && (
+                  <TableCell sx={{ 
+                    background: 'var(--bg-secondary)', 
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    borderBottom: '1px solid var(--border)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontFamily: 'var(--font-heading)'
+                  }}>
+                    {t('users.table.status')}
+                  </TableCell>
+                )}
+                {visibleColumns.created && (
+                  <TableCell sx={{ 
+                    background: 'var(--bg-secondary)', 
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    borderBottom: '1px solid var(--border)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontFamily: 'var(--font-heading)'
+                  }}>
+                    {t('users.table.created')}
+                  </TableCell>
+                )}
               </TableRow>
             </TableHead>
             
@@ -365,22 +531,32 @@ export default function Users() {
                 // Beautiful Skeleton Loading State rows to prevent UI layout shift
                 Array.from(new Array(rowsPerPage)).map((_, index) => (
                   <TableRow key={index}>
-                    <TableCell>
-                      <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-                        <Skeleton variant="circular" width={40} height={40} />
-                        <Skeleton variant="text" width={120} height={20} />
-                      </Stack>
-                    </TableCell>
-                    <TableCell><Skeleton variant="text" width={180} height={20} /></TableCell>
-                    <TableCell><Skeleton variant="rectangular" width={70} height={24} sx={{ borderRadius: 'var(--radius-full)' }} /></TableCell>
-                    <TableCell><Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: 'var(--radius-full)' }} /></TableCell>
-                    <TableCell><Skeleton variant="text" width={100} height={20} /></TableCell>
+                    {visibleColumns.name && (
+                      <TableCell>
+                        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+                          <Skeleton variant="circular" width={40} height={40} />
+                          <Skeleton variant="text" width={120} height={20} />
+                        </Stack>
+                      </TableCell>
+                    )}
+                    {visibleColumns.email && (
+                      <TableCell><Skeleton variant="text" width={180} height={20} /></TableCell>
+                    )}
+                    {visibleColumns.role && (
+                      <TableCell><Skeleton variant="rectangular" width={70} height={24} sx={{ borderRadius: 'var(--radius-full)' }} /></TableCell>
+                    )}
+                    {visibleColumns.status && (
+                      <TableCell><Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: 'var(--radius-full)' }} /></TableCell>
+                    )}
+                    {visibleColumns.created && (
+                      <TableCell><Skeleton variant="text" width={100} height={20} /></TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : users.length === 0 ? (
                 // Elegant empty state row
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                  <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} align="center" sx={{ py: 8 }}>
                     <Stack spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
                       <Box sx={{ p: 2, borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
                         <UsersIcon size={40} />
@@ -413,94 +589,104 @@ export default function Users() {
                         }}
                       >
                         {/* Name Cell with initials Avatar */}
-                        <TableCell sx={{ color: 'var(--text-primary)' }}>
-                          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-                            <Avatar
-                              sx={{ 
-                                width: 36, 
-                                height: 36, 
-                                fontSize: '0.8rem',
-                                fontWeight: 700,
-                                background: isAdmin 
-                                  ? 'linear-gradient(135deg, #ef4444 0%, #db2777 100%)' 
-                                  : 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
-                                color: '#fff',
-                                boxShadow: isAdmin 
-                                  ? '0 2px 10px rgba(239, 68, 68, 0.2)'
-                                  : '0 2px 10px var(--primary-glow)'
-                              }}
-                            >
-                              {getInitials(user.fullName)}
-                            </Avatar>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                              {user.fullName}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
+                        {visibleColumns.name && (
+                          <TableCell sx={{ color: 'var(--text-primary)' }}>
+                            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+                              <Avatar
+                                sx={{ 
+                                  width: 36, 
+                                  height: 36, 
+                                  fontSize: '0.8rem',
+                                  fontWeight: 700,
+                                  background: isAdmin 
+                                    ? 'linear-gradient(135deg, #ef4444 0%, #db2777 100%)' 
+                                    : 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+                                  color: '#fff',
+                                  boxShadow: isAdmin 
+                                    ? '0 2px 10px rgba(239, 68, 68, 0.2)'
+                                    : '0 2px 10px var(--primary-glow)'
+                                }}
+                              >
+                                {getInitials(user.fullName)}
+                              </Avatar>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {user.fullName}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
+                        )}
 
                         {/* Email Cell with Icon */}
-                        <TableCell sx={{ color: 'var(--text-secondary)' }}>
-                          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                            <Mail size={14} className="text-muted" style={{ opacity: 0.6 }} />
-                            <Typography variant="body2">{user.email}</Typography>
-                          </Stack>
-                        </TableCell>
+                        {visibleColumns.email && (
+                          <TableCell sx={{ color: 'var(--text-secondary)' }}>
+                            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                              <Mail size={14} className="text-muted" style={{ opacity: 0.6 }} />
+                              <Typography variant="body2">{user.email}</Typography>
+                            </Stack>
+                          </TableCell>
+                        )}
 
                         {/* Role Cell with Custom Tag */}
-                        <TableCell>
-                          <Box 
-                            className="tag"
-                            sx={{ 
-                              px: 1.5, 
-                              py: 0.5, 
-                              borderRadius: '10px',
-                              fontSize: '0.65rem',
-                              fontWeight: 800,
-                              textTransform: 'uppercase',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 0.75,
-                              background: isAdmin ? 'rgba(239, 68, 68, 0.1)' : 'rgba(124, 58, 237, 0.1)',
-                              color: isAdmin ? '#ef4444' : 'var(--primary)',
-                              border: isAdmin ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(124, 58, 237, 0.2)',
-                              boxShadow: isAdmin ? '0 0 8px rgba(239, 68, 68, 0.05)' : '0 0 8px var(--primary-glow)'
-                            }}
-                          >
-                            {isAdmin ? <ShieldAlert size={10} /> : <Shield size={10} />}
-                            {user.role || 'user'}
-                          </Box>
-                        </TableCell>
+                        {visibleColumns.role && (
+                          <TableCell>
+                            <Box 
+                              className="tag"
+                              sx={{ 
+                                px: 1.5, 
+                                py: 0.5, 
+                                borderRadius: '10px',
+                                fontSize: '0.65rem',
+                                fontWeight: 800,
+                                textTransform: 'uppercase',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 0.75,
+                                background: isAdmin ? 'rgba(239, 68, 68, 0.1)' : 'rgba(124, 58, 237, 0.1)',
+                                color: isAdmin ? '#ef4444' : 'var(--primary)',
+                                border: isAdmin ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(124, 58, 237, 0.2)',
+                                boxShadow: isAdmin ? '0 0 8px rgba(239, 68, 68, 0.05)' : '0 0 8px var(--primary-glow)'
+                              }}
+                            >
+                              {isAdmin ? <ShieldAlert size={10} /> : <Shield size={10} />}
+                              {user.role || 'user'}
+                            </Box>
+                          </TableCell>
+                        )}
 
                         {/* Status Cell */}
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 0.75,
-                              px: 1.5,
-                              py: 0.5,
-                              borderRadius: 'var(--radius-full)',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              textTransform: 'capitalize',
-                              color: isActive ? 'var(--success)' : 'var(--text-muted)',
-                              background: isActive ? 'rgba(16, 185, 129, 0.1)' : 'var(--border)',
-                              border: isActive ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid var(--border)'
-                            }}
-                          >
-                            {isActive ? <CheckCircle size={10} /> : <AlertCircle size={10} />}
-                            {user.status || 'active'}
-                          </Box>
-                        </TableCell>
+                        {visibleColumns.status && (
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 0.75,
+                                px: 1.5,
+                                py: 0.5,
+                                borderRadius: 'var(--radius-full)',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                textTransform: 'capitalize',
+                                color: isActive ? 'var(--success)' : 'var(--text-muted)',
+                                background: isActive ? 'rgba(16, 185, 129, 0.1)' : 'var(--border)',
+                                border: isActive ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid var(--border)'
+                              }}
+                            >
+                              {isActive ? <CheckCircle size={10} /> : <AlertCircle size={10} />}
+                              {user.status || 'active'}
+                            </Box>
+                          </TableCell>
+                        )}
 
                         {/* Created At Cell */}
-                        <TableCell sx={{ color: 'var(--text-secondary)' }}>
-                          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                            <Calendar size={14} style={{ opacity: 0.6 }} />
-                            <Typography variant="body2">{formatDate(user.createdAt)}</Typography>
-                          </Stack>
-                        </TableCell>
+                        {visibleColumns.created && (
+                          <TableCell sx={{ color: 'var(--text-secondary)' }}>
+                            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                              <Calendar size={14} style={{ opacity: 0.6 }} />
+                              <Typography variant="body2">{formatDate(user.createdAt)}</Typography>
+                            </Stack>
+                          </TableCell>
+                        )}
                       </TableRow>
                     );
                   })
