@@ -123,7 +123,7 @@ export default function Home() {
 
       {/* Grid of Empty Layout Sections (Dash-border styling placeholders for building sections) */}
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card 
             className="glass glass-interactive" 
             sx={{ 
@@ -150,7 +150,7 @@ export default function Home() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card 
             className="glass glass-interactive" 
             sx={{ 

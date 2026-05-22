@@ -11,6 +11,15 @@
       "docs": "Read Documentation"
     },
     "footer": "Antigravity Dev Template • Ready for your custom application"
+  },
+  "menu": {
+    "inbox": "Inbox",
+    "starred": "Starred",
+    "sendEmail": "Send email",
+    "drafts": "Drafts",
+    "allMail": "All mail",
+    "trash": "Trash",
+    "spam": "Spam"
   }
 }
 

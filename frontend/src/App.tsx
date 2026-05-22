@@ -26,7 +26,7 @@ const cacheLtr = createCache({
 });
 
 export default function App() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   // Core Theme States
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
